@@ -205,4 +205,4 @@ Outputs:
 ---
 
 ## Changelog
-- 1.0: Extracted from RomaniaBattles loopback-spec.md (25.9KB → condensed to essential reference)
+- 1.0: Extracted from production project loopback-spec.md (25.9KB → condensed to essential reference)

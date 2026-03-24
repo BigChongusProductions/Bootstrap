@@ -1574,7 +1574,10 @@ validate_cross() {
   local OLD_P_NAME="$P_NAME"
 
   section "5a. Hardcoded project-specific contamination scan"
-  local CONTAM_PATTERN="MasterDashboard\|master_dashboard\|TeaTimer\|tea_timer\|RomaniaBattles\|romania_battles\|Drawstring\|drawstring\|chonkius"
+  # Check for other projects' names leaking into generated test projects.
+  # Exclude the current user's username — it legitimately appears in path
+  # substitutions (e.g., /Users/<user>/Desktop/test_project1 in work.sh).
+  local CONTAM_PATTERN="MasterDashboard\|master_dashboard\|TeaTimer\|tea_timer\|RomaniaBattles\|romania_battles\|Drawstring\|drawstring"
   for d in 1 2 3 4; do
     local PROJ_DIR="$SUITE_DIR/test_project$d"
     [ -d "$PROJ_DIR" ] || continue
@@ -1698,7 +1701,7 @@ regression_tests() {
   else fail "$GREP_P_HITS grep -P occurrence(s) in template scripts"; fi
 
   section "R2. No project-specific contamination in templates"
-  local CONTAM_TERMS="MasterDashboard\|master_dashboard\|TeaTimer\|tea_timer\|RomaniaBattles\|romania_battles\|Drawstring\|drawstring\|chonkius"
+  local CONTAM_TERMS="MasterDashboard\|master_dashboard\|TeaTimer\|tea_timer\|RomaniaBattles\|romania_battles\|Drawstring\|drawstring"
   local CONTAM_HITS; CONTAM_HITS=$(grep -r "$CONTAM_TERMS" "$TEMPLATES/" \
     --include="*.sh" --include="*.md" --include="*.py" --include="*.json" 2>/dev/null \
     | grep -v ".git/" | wc -l | tr -d ' ')

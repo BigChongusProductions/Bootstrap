@@ -64,6 +64,34 @@ NEXT_3=$(sqlite3 "$DB" "
 " 2>/dev/null)
 [ -z "$NEXT_3" ] && NEXT_3="- (none — all Claude tasks are blocked or done)"
 
+# ─── File context for next task ──────────────────────────────────────────
+NEXT_TASK_FILES=""
+NEXT_TASK_HANDOVER=""
+if [ -n "$NEXT_TASK_ID" ]; then
+    # Get predecessor's files_touched (from the task that blocked this one)
+    NEXT_TASK_FILES=$(sqlite3 "$DB" "
+        SELECT t2.files_touched
+        FROM tasks t1
+        LEFT JOIN tasks t2 ON t1.blocked_by = t2.id
+        WHERE t1.id = '$NEXT_TASK_ID'
+          AND t2.files_touched IS NOT NULL AND t2.files_touched != '';
+    " 2>/dev/null)
+
+    # Get handover notes from most recently completed task or in-progress
+    NEXT_TASK_HANDOVER=$(sqlite3 "$DB" "
+        SELECT handover_notes FROM tasks
+        WHERE handover_notes IS NOT NULL AND handover_notes != ''
+        ORDER BY
+            CASE WHEN status='IN_PROGRESS' THEN 0
+                 WHEN status='DONE' THEN 1
+                 ELSE 2 END,
+            updated_at DESC
+        LIMIT 1;
+    " 2>/dev/null)
+fi
+
+# ─── Git: files changed this session ────────────────────────────────────
+
 # ─── Git: tasks completed this session ────────────────────────────────────
 LAST_SESSION_TAG=$(git -C "$DIR" tag -l 'session/*' 2>/dev/null | sort -V | tail -1)
 if [ -n "$LAST_SESSION_TAG" ]; then
@@ -83,12 +111,11 @@ cat > "$OUTFILE" << HEREDOC
 
 ---
 
-## Session Start (copy-paste)
+## Quick Start (copy-paste)
 
 \`\`\`bash
 cd %%PROJECT_PATH%%
-bash session_briefing.sh
-bash db_queries.sh next
+bash db_queries.sh resume
 \`\`\`
 
 ---
@@ -124,6 +151,8 @@ ${COMPLETED_THIS_SESSION}
 **Next up (Claude queue):**
 ${NEXT_3}
 
+$(if [ -n "$NEXT_TASK_FILES" ]; then printf "**Predecessor files (next task context):**\n%s\n" "$NEXT_TASK_FILES"; fi)
+$(if [ -n "$NEXT_TASK_HANDOVER" ]; then printf "**Handover notes:**\n%s\n" "$NEXT_TASK_HANDOVER"; fi)
 $(if [ -n "$SIGNAL_REASONS" ]; then printf "**Signal reasons (%s):**\n%b" "$SIGNAL" "$SIGNAL_REASONS"; fi)
 HEREDOC
 

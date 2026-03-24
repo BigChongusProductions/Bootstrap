@@ -424,5 +424,7 @@ if [ -f "$DB" ]; then
 fi
 
 echo ""
+echo "  ⚡ Quick start: bash db_queries.sh resume"
+echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""

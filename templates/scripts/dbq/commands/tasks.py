@@ -188,6 +188,22 @@ def _auto_commit(db: Database, task_id: str, phase: str, config):
 
     if commit_result.returncode == 0:
         output.commit_success_message(commit_msg)
+        # Capture files touched for session handover
+        files_result = subprocess.run(
+            ["git", "-C", proj_dir, "diff", "--name-only", "HEAD~1", "HEAD"],
+            capture_output=True, text=True,
+        )
+        if files_result.returncode == 0 and files_result.stdout.strip():
+            touched = [
+                f for f in files_result.stdout.strip().splitlines()
+                if not f.endswith(".db")
+            ]
+            if touched:
+                db.execute(
+                    "UPDATE tasks SET files_touched=? WHERE id=?",
+                    (json.dumps(touched), task_id),
+                )
+                db.commit()
         # Auto-push
         push_result = subprocess.run(
             ["git", "-C", proj_dir, "push"],
@@ -800,7 +816,7 @@ def cmd_task(db: Database, task_id: str):
         "blocked_by, completed_on, title, details, research_notes, "
         "COALESCE(track,'forward') as track, origin_phase, severity, "
         "gate_critical, loopback_reason, needs_browser, researched, "
-        "breakage_tested "
+        "breakage_tested, files_touched, handover_notes "
         "FROM tasks WHERE id=?",
         (task_id,),
     )
@@ -823,6 +839,19 @@ def cmd_task(db: Database, task_id: str):
         print(f"\nDetails:\n{task['details']}")
     if task["research_notes"]:
         print(f"\n📖 Research:\n{task['research_notes']}")
+    if task["files_touched"]:
+        try:
+            files = json.loads(task["files_touched"])
+            if files:
+                print(f"\n📁 Files touched:")
+                for f in files[:15]:
+                    print(f"  {f}")
+                if len(files) > 15:
+                    print(f"  ... ({len(files) - 15} more)")
+        except (json.JSONDecodeError, TypeError):
+            pass
+    if task["handover_notes"]:
+        print(f"\n📝 Handover notes:\n{task['handover_notes']}")
 
 
 # ── start command ────────────────────────────────────────────────────

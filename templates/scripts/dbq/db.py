@@ -132,6 +132,8 @@ MIGRATION_COLUMNS = {
         ("researched", "INTEGER DEFAULT 0"),
         ("breakage_tested", "INTEGER DEFAULT 0"),
         ("research_notes", "TEXT"),
+        ("files_touched", "TEXT"),
+        ("handover_notes", "TEXT"),
     ],
 }
 

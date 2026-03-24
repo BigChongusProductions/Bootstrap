@@ -268,6 +268,18 @@ def main(argv: Optional[List[str]] = None):
 
     subparsers.add_parser("verify", help="Verify DB is populated")
 
+    # ── Handover ──
+    p_ho = subparsers.add_parser("handover", help="Save handover notes for a task")
+    p_ho.add_argument("task_id", help="Task ID")
+    p_ho.add_argument("notes", help="Handover notes (file refs, arch context)")
+
+    p_resume = subparsers.add_parser(
+        "resume", help="Session resume — compact context for next task",
+    )
+    p_resume.add_argument(
+        "--task", default="", help="Override: resume specific task ID",
+    )
+
     # ── Board ──
     subparsers.add_parser("board", help="Generate TASK_BOARD.md")
 
@@ -557,6 +569,15 @@ def _dispatch(args, db, config):
     elif cmd == "verify":
         from .commands.health import cmd_verify
         cmd_verify(db)
+
+    # ── Handover ──
+    elif cmd == "handover":
+        from .commands.handover import cmd_handover
+        cmd_handover(db, args.task_id, args.notes)
+
+    elif cmd == "resume":
+        from .commands.handover import cmd_resume
+        cmd_resume(db, config, task_override=args.task)
 
     elif cmd == "board":
         from .commands.health import cmd_board
