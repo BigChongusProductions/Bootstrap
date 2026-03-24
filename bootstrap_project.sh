@@ -102,8 +102,12 @@ cd "$PROJECT_PATH"
 cat > CLAUDE.md << 'CLAUDEEOF'
 # %%PROJECT_NAME%% — Project Entry Point
 > Cognitive rules auto-loaded from ~/.claude/CLAUDE.md (global).
-> Project-specific rules imported below.
+> Core frameworks loaded via @imports below. Extended rules in refs/rules-extended.md (on demand).
 
+@~/.claude/frameworks/session-protocol.md
+@~/.claude/frameworks/phase-gates.md
+@~/.claude/frameworks/correction-protocol.md
+@~/.claude/frameworks/delegation.md
 @%%PROJECT_NAME_UPPER%%_RULES.md
 @AGENT_DELEGATION.md
 @LESSONS_%%PROJECT_NAME_UPPER%%.md
@@ -114,7 +118,7 @@ sedi "s/%%PROJECT_NAME_UPPER%%/$PROJECT_NAME_UPPER/g" CLAUDE.md
 echo "✅ CLAUDE.md"
 
 # ── 2. PROJECT_RULES.md (from template) ─────────────────────────────────────
-TEMPLATE="$HOME/.claude/templates/PROJECT_RULES_TEMPLATE.md"
+TEMPLATE="$HOME/.claude/dev-framework/templates/rules/RULES_TEMPLATE.md"
 RULES_FILE="${PROJECT_NAME_UPPER}_RULES.md"
 
 if [ -f "$TEMPLATE" ]; then
@@ -713,44 +717,13 @@ if [ -f "$HOME/.claude/harvest.sh" ]; then
     bash "$HOME/.claude/harvest.sh" 2>&1 | grep -E "📚|✅|━━━" || true
 fi
 
-# ── 20. Copy frameworks (if requested) ──────────────────────────────────────
-if [ -n "$FRAMEWORKS_ARG" ]; then
-    CANONICAL_FW="$HOME/.claude/frameworks"
-    if [ -d "$CANONICAL_FW" ]; then
-        mkdir -p frameworks
-        COPIED=0
-        if [ "$FRAMEWORKS_ARG" = "all" ]; then
-            for fw in "$CANONICAL_FW"/*.md; do
-                [ -f "$fw" ] || continue
-                cp "$fw" frameworks/
-                COPIED=$((COPIED + 1))
-            done
-        else
-            # Comma-separated list
-            IFS=',' read -ra FW_LIST <<< "$FRAMEWORKS_ARG"
-            for fw_name in "${FW_LIST[@]}"; do
-                fw_name=$(echo "$fw_name" | xargs)  # trim whitespace
-                if [ -f "$CANONICAL_FW/${fw_name}.md" ]; then
-                    cp "$CANONICAL_FW/${fw_name}.md" frameworks/
-                    COPIED=$((COPIED + 1))
-                else
-                    echo "  ⚠️  Framework not found: ${fw_name}.md"
-                fi
-            done
-        fi
-        if [ "$COPIED" -gt 0 ]; then
-            echo "✅ Copied $COPIED framework(s) to frameworks/"
-            # Add @imports to CLAUDE.md
-            echo "" >> CLAUDE.md
-            for fw in frameworks/*.md; do
-                [ -f "$fw" ] || continue
-                echo "@$fw" >> CLAUDE.md
-            done
-            echo "   Added @framework imports to CLAUDE.md"
-        fi
-    else
-        echo "⚠️  No frameworks at $CANONICAL_FW — skipping"
-    fi
+# ── 20. Verify frameworks exist (CLAUDE.md @imports point to ~/.claude/frameworks/) ──
+CANONICAL_FW="$HOME/.claude/frameworks"
+if [ -d "$CANONICAL_FW" ]; then
+    FW_COUNT=$(ls "$CANONICAL_FW"/*.md 2>/dev/null | wc -l | tr -d ' ')
+    echo "✅ Frameworks verified: $FW_COUNT files at ~/.claude/frameworks/ (loaded via @import in CLAUDE.md)"
+else
+    echo "⚠️  No frameworks at $CANONICAL_FW — CLAUDE.md @imports will fail. Run /setup-templates first."
 fi
 
 # ── 21. refs/ directory (progressive disclosure) ────────────────────────────
@@ -767,47 +740,25 @@ REFSEOF
 echo "✅ refs/ directory"
 
 # ── 22. AGENT_DELEGATION.md ─────────────────────────────────────────────────
-cat > AGENT_DELEGATION.md << DELEGEOF
+DELEG_TEMPLATE="$HOME/.claude/dev-framework/templates/rules/AGENT_DELEGATION_TEMPLATE.md"
+if [ -f "$DELEG_TEMPLATE" ]; then
+    cp "$DELEG_TEMPLATE" AGENT_DELEGATION.md
+    sedi "s|%%RULES_FILE%%|${PROJECT_NAME_UPPER}_RULES.md|g" AGENT_DELEGATION.md
+    echo "✅ AGENT_DELEGATION.md (from template)"
+else
+    echo "⚠️  Template not found at $DELEG_TEMPLATE — creating minimal version"
+    cat > AGENT_DELEGATION.md << DELEGEOF
 # Agent Delegation Logic
 > Authoritative reference for model selection, sub-agent spawning, and failure escalation.
-> Auto-imported by CLAUDE.md.
-> Reference catalogs live in \`refs/\`.
-> **MANDATORY:** Map every task batch to tiers BEFORE executing.
+> 📂 Tier definitions and delegation rules in \`~/.claude/frameworks/delegation.md\`.
 
----
-
-## §1 — The 6-Tier Model
-
-| Tier | Model / Tool | Cost | Use When |
-|------|-------------|------|----------|
-| **Opus** (orchestrator) | \`claude-opus-4-6\` | \$\$\$\$ | Architecture, gate reviews, judgment calls, anything that failed at lower tier |
-| **Sonnet** (implementer) | \`claude-sonnet-4-6\` | \$\$ | Multi-file features, non-trivial state/animation, cross-file reasoning |
-| **Haiku** (mechanic) | \`claude-haiku-4-5\` | \$ | Single-file, display-only, config, clear spec with no judgment |
-| **Gemini** (specialist) | via MCP | varies | Large context, web research, image gen, translation, second opinions |
-| **Grok** (specialist) | via MCP | \$ | X/Twitter search, real-time web, Aurora image gen, cheap inference |
-| **Ollama** (local) | via MCP | free | Local language QA, semantic similarity, unlimited local GPU |
-
-## §2 — Pre-Phase Delegation Map (mandatory)
-
-Before touching any file, produce: \`| Task ID | Title | Tier | Why |\`
-
-## §3 — Sub-Agent Failure Escalation
-
-Haiku fails twice → Sonnet. Sonnet fails twice → Opus direct. Log every escalation.
-
-## §4 — Parallelism Rules
-
-Parallel only if writing different files. Never parallel on same file or dependent outputs.
-
----
-
-## §8 — Delegation Map
-
+## §7 — Delegation Map
 <!-- DELEGATION-START -->
 No tasks defined yet. Populate the DB and run: \`bash db_queries.sh delegation-md\`
 <!-- DELEGATION-END -->
 DELEGEOF
-echo "✅ AGENT_DELEGATION.md"
+    echo "✅ AGENT_DELEGATION.md (minimal)"
+fi
 
 # ── 23. Git init ─────────────────────────────────────────────────────────────
 if [ ! -d ".git" ]; then
