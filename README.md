@@ -1,4 +1,4 @@
-# project-bootstrap v0.6.0
+# project-bootstrap v0.6.1
 
 Turns an empty folder into a fully operational development environment with 33 integrated systems — from discovery interview to working workflow engine. Battle-tested across RomaniaBattles, MasterDashboard, and TeaTimer.
 
@@ -109,6 +109,11 @@ Before your first `/activate-engine`, you need canonical templates:
 | `spec-output-schemas.md` | Schema for all 4 spec files |
 
 ## Changelog
+
+### v0.6.1
+- **Audit fixes** — added YAML header to loopback-system.md, removed dead `--frameworks` flag, fixed apply_backlog.sh path resolution, standardized framework source attribution, documented optional frameworks in CLAUDE_TEMPLATE.md
+- **Non-interactive mode** — added `--non-interactive` flag to bootstrap_project.sh for unattended bootstrapping
+- **E2E test** — added test_bootstrap_e2e.sh for full + quick lifecycle validation
 
 ### v0.6.0
 - **Standalone repo** — extracted from ~/.claude/ into git-tracked repository with symlinks

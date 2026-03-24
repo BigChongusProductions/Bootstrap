@@ -15,11 +15,7 @@
 #   - generate_board.py
 #   - .gitignore, .claude/settings.local.json
 #   - Git repo with master + dev branches
-#   - (optional) Framework files from ~/.claude/frameworks/
-#
-# Options:
-#   --frameworks all          Copy all frameworks
-#   --frameworks f1,f2,f3     Copy specific frameworks (comma-separated, no .md)
+#   - (optional) Framework files from ~/.claude/frameworks/ (via @imports)
 # ─────────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -34,8 +30,8 @@ sedi() {
 }
 
 if [ $# -lt 2 ]; then
-    echo "Usage: bash bootstrap_project.sh \"Project Name\" /path/to/project [--frameworks all|f1,f2,...]"
-    echo "  e.g. bash bootstrap_project.sh \"My Project\" ~/Desktop/MyProject --frameworks all"
+    echo "Usage: bash bootstrap_project.sh \"Project Name\" /path/to/project [--lifecycle full|quick] [--non-interactive]"
+    echo "  e.g. bash bootstrap_project.sh \"My Project\" ~/Desktop/MyProject --lifecycle full"
     exit 1
 fi
 
@@ -43,33 +39,37 @@ PROJECT_NAME="$1"
 PROJECT_PATH="$2"
 
 # Parse flags
-FRAMEWORKS_ARG=""
 LIFECYCLE_MODE=""
+NON_INTERACTIVE=false
 shift 2
 while [ $# -gt 0 ]; do
     case "$1" in
-        --frameworks) FRAMEWORKS_ARG="${2:-all}"; shift 2 ;;
         --lifecycle) LIFECYCLE_MODE="${2:-full}"; shift 2 ;;
+        --non-interactive) NON_INTERACTIVE=true; shift ;;
         *) shift ;;
     esac
 done
 
-# If no lifecycle mode specified, ask interactively
+# If no lifecycle mode specified, ask interactively (unless --non-interactive)
 if [ -z "$LIFECYCLE_MODE" ]; then
-    echo ""
-    echo "  Choose project lifecycle mode:"
-    echo ""
-    echo "  [1] FULL (9-phase) — ENVISION → RESEARCH → DECIDE → SPECIFY → PLAN → BUILD → VALIDATE → SHIP → EVOLVE"
-    echo "      Best for: serious projects, new domains, unfamiliar stacks"
-    echo ""
-    echo "  [2] QUICK (3-phase) — PLAN → BUILD → SHIP"
-    echo "      Best for: small projects, known stack, clear scope already decided"
-    echo ""
-    read -p "  Enter 1 or 2 (default: 1): " LIFECYCLE_CHOICE
-    case "$LIFECYCLE_CHOICE" in
-        2) LIFECYCLE_MODE="quick" ;;
-        *) LIFECYCLE_MODE="full" ;;
-    esac
+    if [ "$NON_INTERACTIVE" = true ]; then
+        LIFECYCLE_MODE="full"
+    else
+        echo ""
+        echo "  Choose project lifecycle mode:"
+        echo ""
+        echo "  [1] FULL (9-phase) — ENVISION → RESEARCH → DECIDE → SPECIFY → PLAN → BUILD → VALIDATE → SHIP → EVOLVE"
+        echo "      Best for: serious projects, new domains, unfamiliar stacks"
+        echo ""
+        echo "  [2] QUICK (3-phase) — PLAN → BUILD → SHIP"
+        echo "      Best for: small projects, known stack, clear scope already decided"
+        echo ""
+        read -p "  Enter 1 or 2 (default: 1): " LIFECYCLE_CHOICE
+        case "$LIFECYCLE_CHOICE" in
+            2) LIFECYCLE_MODE="quick" ;;
+            *) LIFECYCLE_MODE="full" ;;
+        esac
+    fi
 fi
 PROJECT_NAME_UPPER=$(echo "$PROJECT_NAME" | tr '[:lower:]' '[:upper:]' | tr ' ' '_')
 PROJECT_NAME_LOWER=$(echo "$PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '_')
@@ -85,11 +85,15 @@ echo ""
 
 # ── Create project directory ─────────────────────────────────────────────────
 if [ -d "$PROJECT_PATH" ]; then
-    echo "⚠️  Directory already exists: $PROJECT_PATH"
-    read -p "   Continue anyway? (y/N) " CONFIRM
-    if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
-        echo "Aborted."
-        exit 0
+    if [ "$NON_INTERACTIVE" = true ]; then
+        echo "⚠️  Directory already exists: $PROJECT_PATH (continuing — non-interactive mode)"
+    else
+        echo "⚠️  Directory already exists: $PROJECT_PATH"
+        read -p "   Continue anyway? (y/N) " CONFIRM
+        if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+            echo "Aborted."
+            exit 0
+        fi
     fi
 else
     mkdir -p "$PROJECT_PATH"
@@ -240,6 +244,7 @@ echo "✅ NEXT_SESSION.md"
 # ── 7. SQLite Database ──────────────────────────────────────────────────────
 if command -v sqlite3 &> /dev/null; then
     sqlite3 "$DB_NAME" << 'SQLEOF'
+-- Schema aligned with Python CLI (dbq/db.py) — do not modify independently
 CREATE TABLE IF NOT EXISTS tasks (
     id TEXT PRIMARY KEY,
     phase TEXT NOT NULL,
@@ -265,7 +270,12 @@ CREATE TABLE IF NOT EXISTS tasks (
     needs_browser INTEGER DEFAULT 0,
     -- Falsification protocol
     researched INTEGER DEFAULT 0,
-    breakage_tested INTEGER DEFAULT 0
+    breakage_tested INTEGER DEFAULT 0,
+    -- Additional columns (Python CLI compat)
+    notes TEXT,
+    research_notes TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS phase_gates (
@@ -277,56 +287,62 @@ CREATE TABLE IF NOT EXISTS phase_gates (
 
 CREATE TABLE IF NOT EXISTS milestone_confirmations (
     task_id TEXT PRIMARY KEY,
-    confirmed_on TEXT,
+    confirmed_on TEXT NOT NULL,
     confirmed_by TEXT DEFAULT 'MASTER',
     reasons TEXT
 );
 
 CREATE TABLE IF NOT EXISTS loopback_acks (
     loopback_id TEXT NOT NULL,
-    acked_on TEXT,
-    acked_by TEXT,
-    reason TEXT,
+    acked_on TEXT NOT NULL,
+    acked_by TEXT NOT NULL,
+    reason TEXT NOT NULL,
     UNIQUE(loopback_id)
 );
 
 CREATE TABLE IF NOT EXISTS assumptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     task_id TEXT,
-    assumption_num INTEGER,
-    text TEXT,
-    verification_cmd TEXT,
-    status TEXT DEFAULT 'NOT_STARTED',
-    output TEXT
+    assumption TEXT NOT NULL,
+    verify_cmd TEXT,
+    verified INTEGER DEFAULT 0,
+    verified_on TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS db_snapshots (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    created_at TEXT DEFAULT (datetime('now')),
     label TEXT,
     git_sha TEXT,
     task_summary TEXT,
     phase_gates TEXT,
-    stats TEXT
+    stats TEXT,
+    phase TEXT,
+    snapshot_at TEXT DEFAULT (datetime('now')),
+    task_count INTEGER,
+    file_paths TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS decisions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    decision_date TEXT,
-    made_by TEXT,
-    decision TEXT,
-    context TEXT
+    id TEXT PRIMARY KEY,
+    description TEXT NOT NULL,
+    options TEXT,
+    choice TEXT,
+    rationale TEXT,
+    decided_at TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_date TEXT,
-    session_type TEXT,
-    summary TEXT
+    session_type TEXT DEFAULT 'Claude Code',
+    summary TEXT,
+    logged_at TEXT DEFAULT (datetime('now'))
 );
 
 -- Bootstrap session log
-INSERT INTO sessions (session_date, session_type, summary)
-VALUES (date('now'), 'Setup', 'Project bootstrapped with workflow engine');
+INSERT INTO sessions (session_type, summary)
+VALUES ('Setup', 'Project bootstrapped with workflow engine');
 SQLEOF
     # Seed phases based on lifecycle mode
     if [ "$LIFECYCLE_MODE" = "full" ]; then
@@ -343,6 +359,10 @@ VALUES
   ('SPE-04', 'P4-SPECIFY', 'MASTER', 'Review and annotate design.md', 'TODO', 43, 'master'),
   ('PLN-01', 'P5-PLAN', 'CLAUDE', 'Generate task breakdown from design.md', 'TODO', 50, 'opus');
 PHASEEOF
+        # Seed phase_gates for all 9 phases
+        for PH in P1-ENVISION P2-RESEARCH P3-DECIDE P4-SPECIFY P5-PLAN P6-BUILD P7-VALIDATE P8-SHIP P9-EVOLVE; do
+            sqlite3 "$DB_NAME" "INSERT OR IGNORE INTO phase_gates (phase) VALUES ('$PH');"
+        done
         echo "✅ Seeded 9-phase lifecycle (P1-ENVISION through P9-EVOLVE)"
     else
         sqlite3 "$DB_NAME" << 'PHASEEOF'
@@ -351,6 +371,10 @@ INSERT INTO tasks (id, phase, assignee, title, status, sort_order, tier)
 VALUES
   ('PLN-01', 'P1-PLAN', 'CLAUDE', 'Generate task breakdown from project specs', 'TODO', 10, 'opus');
 PHASEEOF
+        # Seed phase_gates for all 3 phases
+        for PH in P1-PLAN P2-BUILD P3-SHIP; do
+            sqlite3 "$DB_NAME" "INSERT OR IGNORE INTO phase_gates (phase) VALUES ('$PH');"
+        done
         echo "✅ Seeded 3-phase lifecycle (P1-PLAN → P2-BUILD → P3-SHIP)"
     fi
 
@@ -384,17 +408,29 @@ elif [ "$LIFECYCLE_MODE" = "quick" ]; then
 fi
 
 # ── 8. db_queries.sh (from template) ─────────────────────────────────────────
+# Check both template locations — dev-framework has the complete set
 SCRIPT_TEMPLATES="$HOME/.claude/templates/scripts"
+if [ -d "$HOME/.claude/dev-framework/templates/scripts" ]; then
+    SCRIPT_TEMPLATES="$HOME/.claude/dev-framework/templates/scripts"
+fi
 if [ -f "$SCRIPT_TEMPLATES/db_queries.template.sh" ]; then
     cp "$SCRIPT_TEMPLATES/db_queries.template.sh" db_queries.sh
-    # Parameterize
-    sedi "s/%%DB_NAME%%/$DB_NAME/g" db_queries.sh
-    DB_NAME_BASE="${DB_NAME%.db}"
-    sedi "s/%%DB_NAME_BASE%%/$DB_NAME_BASE/g" db_queries.sh
+    # Parameterize — handle both old (%%DB_NAME%%) and new (%%PROJECT_DB%%) placeholders
     LESSONS_FILE="LESSONS_${PROJECT_NAME_UPPER}.md"
+    DB_NAME_BASE="${DB_NAME%.db}"
+    sedi "s/%%DB_NAME%%/$DB_NAME/g" db_queries.sh
+    sedi "s/%%PROJECT_DB%%/$DB_NAME/g" db_queries.sh
+    sedi "s/%%DB_NAME_BASE%%/$DB_NAME_BASE/g" db_queries.sh
     sedi "s/%%LESSONS_FILE%%/$LESSONS_FILE/g" db_queries.sh
     sedi "s/%%DELEGATION_FILE%%/AGENT_DELEGATION.md/g" db_queries.sh
     sedi "s/%%PROJECT_NAME%%/$PROJECT_NAME/g" db_queries.sh
+    # Compute phase list from lifecycle mode
+    if [ "$LIFECYCLE_MODE" = "full" ]; then
+        PHASES="P1-ENVISION P2-RESEARCH P3-DECIDE P4-SPECIFY P5-PLAN P6-BUILD P7-VALIDATE P8-SHIP P9-EVOLVE"
+    else
+        PHASES="P1-PLAN P2-BUILD P3-SHIP"
+    fi
+    sedi "s/%%PHASES%%/$PHASES/g" db_queries.sh
     chmod +x db_queries.sh
     echo "✅ db_queries.sh (53 commands — from template)"
 else
@@ -419,8 +455,27 @@ if [ -f "$SCRIPT_TEMPLATES/session_briefing.template.sh" ]; then
     sedi "s/%%MEMORY_FILE%%/$MEMORY_FILE/g" session_briefing.sh
     sedi "s/%%RULES_FILE%%/${PROJECT_NAME_UPPER}_RULES.md/g" session_briefing.sh
     sedi "s/%%LESSONS_FILE%%/$LESSONS_FILE/g" session_briefing.sh
+    # Patch @-import resolution: expand ~ in paths before checking existence
+    # The template has: target="$claude_dir/$imported" which fails for @~/.claude/... paths
+    python3 -c "
+import sys
+old = 'target=\"\$claude_dir/\$imported\"'
+new = '''# Expand ~ to \$HOME for absolute @imports (e.g., @~/.claude/frameworks/...)
+            expanded=\"\${imported/#\\\\~/\$HOME}\"
+            if [[ \"\$expanded\" == /* ]]; then
+                target=\"\$expanded\"
+            else
+                target=\"\$claude_dir/\$expanded\"
+            fi'''
+with open('session_briefing.sh') as f:
+    content = f.read()
+if old in content:
+    content = content.replace(old, new, 1)
+    with open('session_briefing.sh', 'w') as f:
+        f.write(content)
+" 2>/dev/null || true
     chmod +x session_briefing.sh
-    echo "✅ session_briefing.sh (from template)"
+    echo "✅ session_briefing.sh (from template + @import path fix)"
 else
     echo "⚠️  session_briefing.template.sh not found — skipping"
 fi
@@ -456,31 +511,26 @@ else
     echo "⚠️  milestone_check.template.sh not found — skipping"
 fi
 
-# ── 13. build_summarizer.sh (stub — customize per project) ──────────────────
-cat > build_summarizer.sh << 'BUILDEOF'
+# ── 13. build_summarizer.sh (from template or stub) ──────────────────────────
+BUILD_TEMPLATE="$SCRIPT_TEMPLATES/build_summarizer.template.sh"
+if [ -f "$BUILD_TEMPLATE" ]; then
+    cp "$BUILD_TEMPLATE" build_summarizer.sh
+    sedi "s/%%DB_NAME%%/$DB_NAME/g" build_summarizer.sh
+    sedi "s/%%PROJECT_NAME%%/$PROJECT_NAME/g" build_summarizer.sh
+    chmod +x build_summarizer.sh
+    echo "✅ build_summarizer.sh (from template — customize build commands)"
+else
+    cat > build_summarizer.sh << 'BUILDEOF'
 #!/usr/bin/env bash
 # Build Summarizer — customize this for your project's build system
 # Usage: bash build_summarizer.sh [build|test|clean]
-
 MODE="${1:-build}"
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 echo "── Build Summarizer ($MODE) ──"
-echo ""
-echo "⚠️  This is a stub. Customize for your project's build system."
-echo ""
-echo "Examples:"
-echo "  # For Next.js:"
-echo "  npm run build 2>&1 | tail -20"
-echo ""
-echo "  # For iOS (Xcode):"
-echo "  xcodebuild -project MyApp.xcodeproj -scheme MyApp build 2>&1 | tail -20"
-echo ""
-echo "  # For Python:"
-echo "  python -m pytest 2>&1 | tail -20"
+echo "⚠️  Stub. Copy full version from ~/.claude/dev-framework/templates/scripts/"
 BUILDEOF
-chmod +x build_summarizer.sh
-echo "✅ build_summarizer.sh (stub — customize for your build system)"
+    chmod +x build_summarizer.sh
+    echo "✅ build_summarizer.sh (stub — template not found)"
+fi
 
 # ── 14. generate_board.py ───────────────────────────────────────────────────
 cat > generate_board.py << BOARDEOF
@@ -760,7 +810,143 @@ DELEGEOF
     echo "✅ AGENT_DELEGATION.md (minimal)"
 fi
 
-# ── 23. Git init ─────────────────────────────────────────────────────────────
+# ── 23. Deploy hook scripts (.claude/hooks/) ─────────────────────────────────
+HOOK_TEMPLATES="$HOME/.claude/dev-framework/templates/hooks"
+if [ -d "$HOOK_TEMPLATES" ]; then
+    mkdir -p .claude/hooks
+    HOOK_COUNT=0
+    for hook_template in "$HOOK_TEMPLATES"/*.template.sh "$HOOK_TEMPLATES"/*.template.conf; do
+        [ -f "$hook_template" ] || continue
+        BASENAME=$(basename "$hook_template" | sed 's/\.template\././')
+        cp "$hook_template" ".claude/hooks/$BASENAME"
+        # Replace common placeholders
+        sedi "s|%%PROJECT_NAME%%|$PROJECT_NAME|g" ".claude/hooks/$BASENAME"
+        sedi "s|%%PROJECT_DB%%|$DB_NAME|g" ".claude/hooks/$BASENAME"
+        sedi "s|%%LESSONS_FILE%%|$LESSONS_FILE|g" ".claude/hooks/$BASENAME"
+        sedi "s|%%PROJECT_RULES_FILE%%|${PROJECT_NAME_UPPER}_RULES.md|g" ".claude/hooks/$BASENAME"
+        sedi "s|%%OWN_DB_PATTERNS%%|${DB_NAME}|g" ".claude/hooks/$BASENAME"
+        sedi "s|%%LESSON_LOG_COMMAND%%|bash db_queries.sh log-lesson|g" ".claude/hooks/$BASENAME"
+        sedi "s|%%AGENT_NAMES%%||g" ".claude/hooks/$BASENAME"
+        chmod +x ".claude/hooks/$BASENAME" 2>/dev/null || true
+        HOOK_COUNT=$((HOOK_COUNT + 1))
+    done
+    echo "✅ .claude/hooks/ ($HOOK_COUNT hook scripts deployed)"
+else
+    echo "⚠️  Hook templates not found at $HOOK_TEMPLATES — skipping"
+fi
+
+# ── 24. Deploy .claude/settings.json (hook wiring) ───────────────────────────
+SETTINGS_TEMPLATE="$HOME/.claude/dev-framework/templates/settings/settings.template.json"
+if [ -f "$SETTINGS_TEMPLATE" ]; then
+    cp "$SETTINGS_TEMPLATE" .claude/settings.json
+    # Fill permission allow with common workflow commands
+    ALLOW_LIST="Bash(bash db_queries.sh *),Bash(bash session_briefing.sh*),Bash(bash coherence_check.sh*),Bash(bash milestone_check.sh*),Bash(bash build_summarizer.sh*),Bash(python3 generate_board.py*),Bash(sqlite3 $DB_NAME*),Bash(git *)"
+    sedi "s|%%PERMISSION_ALLOW%%|$ALLOW_LIST|g" .claude/settings.json
+    echo "✅ .claude/settings.json (hook wiring: 7 event hooks configured)"
+else
+    echo "⚠️  Settings template not found — hooks will not be wired"
+fi
+
+# ── 25. Deploy .claude/agents/ (implementer + worker) ────────────────────────
+AGENT_TEMPLATES="$HOME/.claude/dev-framework/templates/agents"
+if [ -d "$AGENT_TEMPLATES" ]; then
+    mkdir -p .claude/agents/implementer .claude/agents/worker
+    if [ -f "$AGENT_TEMPLATES/implementer.template.md" ]; then
+        cp "$AGENT_TEMPLATES/implementer.template.md" .claude/agents/implementer/implementer.md
+        sedi "s|%%PROJECT_NAME%%|$PROJECT_NAME|g" .claude/agents/implementer/implementer.md
+        sedi "s|%%TECH_STACK_HOOKS%%||g" .claude/agents/implementer/implementer.md
+        sedi "s|%%TECH_STANDARDS%%|Follow the project's code standards in ${PROJECT_NAME_UPPER}_RULES.md.|g" .claude/agents/implementer/implementer.md
+        sedi "s|%%BUILD_COMMAND%%|bash build_summarizer.sh build|g" .claude/agents/implementer/implementer.md
+    fi
+    if [ -f "$AGENT_TEMPLATES/worker.template.md" ]; then
+        cp "$AGENT_TEMPLATES/worker.template.md" .claude/agents/worker/worker.md
+        sedi "s|%%PROJECT_NAME%%|$PROJECT_NAME|g" .claude/agents/worker/worker.md
+        sedi "s|%%TECH_STANDARDS_BRIEF%%|Follow the project's code standards in ${PROJECT_NAME_UPPER}_RULES.md.|g" .claude/agents/worker/worker.md
+    fi
+    echo "✅ .claude/agents/ (implementer + worker configs)"
+else
+    echo "⚠️  Agent templates not found — skipping"
+fi
+
+# ── 26. Deploy missing workflow scripts ───────────────────────────────────────
+# save_session.sh
+if [ -f "$SCRIPT_TEMPLATES/save_session.template.sh" ]; then
+    cp "$SCRIPT_TEMPLATES/save_session.template.sh" save_session.sh
+    sedi "s|%%DB_NAME%%|$DB_NAME|g" save_session.sh
+    sedi "s|%%PROJECT_NAME%%|$PROJECT_NAME|g" save_session.sh
+    sedi "s|%%LESSONS_FILE%%|$LESSONS_FILE|g" save_session.sh
+    sedi "s|%%MEMORY_FILE%%|${PROJECT_NAME_UPPER}_PROJECT_MEMORY.md|g" save_session.sh
+    chmod +x save_session.sh
+    echo "✅ save_session.sh (from template)"
+fi
+
+# shared_signal.sh
+if [ -f "$SCRIPT_TEMPLATES/shared_signal.template.sh" ]; then
+    cp "$SCRIPT_TEMPLATES/shared_signal.template.sh" shared_signal.sh
+    sedi "s|%%DB_NAME%%|$DB_NAME|g" shared_signal.sh
+    sedi "s|%%PROJECT_NAME%%|$PROJECT_NAME|g" shared_signal.sh
+    chmod +x shared_signal.sh
+    echo "✅ shared_signal.sh (from template)"
+fi
+
+# harvest.sh
+if [ -f "$SCRIPT_TEMPLATES/harvest.template.sh" ]; then
+    cp "$SCRIPT_TEMPLATES/harvest.template.sh" harvest.sh
+    sedi "s|%%LESSONS_FILE%%|$LESSONS_FILE|g" harvest.sh
+    sedi "s|%%PROJECT_NAME%%|$PROJECT_NAME|g" harvest.sh
+    chmod +x harvest.sh
+    echo "✅ harvest.sh (from template)"
+fi
+
+# db_queries_legacy.sh (bash fallback for systems without Python 3.10+)
+if [ -f "$SCRIPT_TEMPLATES/db_queries_legacy.template.sh" ]; then
+    cp "$SCRIPT_TEMPLATES/db_queries_legacy.template.sh" db_queries_legacy.sh
+    sedi "s|%%DB_NAME%%|$DB_NAME|g" db_queries_legacy.sh
+    sedi "s|%%DB_NAME_BASE%%|${DB_NAME%.db}|g" db_queries_legacy.sh
+    sedi "s|%%LESSONS_FILE%%|$LESSONS_FILE|g" db_queries_legacy.sh
+    sedi "s|%%DELEGATION_FILE%%|AGENT_DELEGATION.md|g" db_queries_legacy.sh
+    sedi "s|%%PROJECT_NAME%%|$PROJECT_NAME|g" db_queries_legacy.sh
+    chmod +x db_queries_legacy.sh
+    echo "✅ db_queries_legacy.sh (bash fallback — 135KB)"
+fi
+
+# ── 27. Universal placeholder sweep ──────────────────────────────────────────
+# Some templates use %%PROJECT_DB%% instead of %%DB_NAME%%, and other variants.
+# Do a final sweep across all deployed .sh files to catch any remaining placeholders.
+for script in *.sh .claude/hooks/*.sh .claude/hooks/*.conf; do
+    [ -f "$script" ] || continue
+    sedi "s|%%PROJECT_DB%%|$DB_NAME|g" "$script" 2>/dev/null || true
+    sedi "s|%%DB_NAME%%|$DB_NAME|g" "$script" 2>/dev/null || true
+    sedi "s|%%PROJECT_NAME%%|$PROJECT_NAME|g" "$script" 2>/dev/null || true
+    sedi "s|%%LESSONS_FILE%%|$LESSONS_FILE|g" "$script" 2>/dev/null || true
+    sedi "s|%%RULES_FILE%%|${PROJECT_NAME_UPPER}_RULES.md|g" "$script" 2>/dev/null || true
+    sedi "s|%%MEMORY_FILE%%|${PROJECT_NAME_UPPER}_PROJECT_MEMORY.md|g" "$script" 2>/dev/null || true
+    sedi "s|%%MAIN_BRANCH%%|main|g" "$script" 2>/dev/null || true
+    sedi "s|%%DEV_BRANCH%%|dev|g" "$script" 2>/dev/null || true
+    sedi "s|%%PROJECT_DB_NAME%%|${DB_NAME%.db}|g" "$script" 2>/dev/null || true
+    sedi "s|%%PROJECT_PATH%%|$PROJECT_PATH|g" "$script" 2>/dev/null || true
+    sedi "s|%%PROJECT_MEMORY_FILE%%|${PROJECT_NAME_UPPER}_PROJECT_MEMORY.md|g" "$script" 2>/dev/null || true
+done
+
+# Generate phase-specific SQL fragments for legacy script
+if [ -f db_queries_legacy.sh ]; then
+    if [ "$LIFECYCLE_MODE" = "full" ]; then
+        PHASE_CASE="'P1-ENVISION') echo 1;; 'P2-RESEARCH') echo 2;; 'P3-DECIDE') echo 3;; 'P4-SPECIFY') echo 4;; 'P5-PLAN') echo 5;; 'P6-BUILD') echo 6;; 'P7-VALIDATE') echo 7;; 'P8-SHIP') echo 8;; 'P9-EVOLVE') echo 9;;"
+        PHASE_CASE_SQL="WHEN 'P1-ENVISION' THEN 1 WHEN 'P2-RESEARCH' THEN 2 WHEN 'P3-DECIDE' THEN 3 WHEN 'P4-SPECIFY' THEN 4 WHEN 'P5-PLAN' THEN 5 WHEN 'P6-BUILD' THEN 6 WHEN 'P7-VALIDATE' THEN 7 WHEN 'P8-SHIP' THEN 8 WHEN 'P9-EVOLVE' THEN 9"
+        PHASE_IN_SQL="'P1-ENVISION','P2-RESEARCH','P3-DECIDE','P4-SPECIFY','P5-PLAN','P6-BUILD','P7-VALIDATE','P8-SHIP','P9-EVOLVE'"
+    else
+        PHASE_CASE="'P1-PLAN') echo 1;; 'P2-BUILD') echo 2;; 'P3-SHIP') echo 3;;"
+        PHASE_CASE_SQL="WHEN 'P1-PLAN' THEN 1 WHEN 'P2-BUILD' THEN 2 WHEN 'P3-SHIP' THEN 3"
+        PHASE_IN_SQL="'P1-PLAN','P2-BUILD','P3-SHIP'"
+    fi
+    sedi "s|%%PHASE_CASE_ORDINALS%%|$PHASE_CASE|g" db_queries_legacy.sh 2>/dev/null || true
+    sedi "s|%%PHASE_CASE_SQL%%|$PHASE_CASE_SQL|g" db_queries_legacy.sh 2>/dev/null || true
+    sedi "s|%%PHASE_IN_SQL%%|$PHASE_IN_SQL|g" db_queries_legacy.sh 2>/dev/null || true
+fi
+REMAINING=$(grep -rn '%%[A-Z_]*%%' *.sh .claude/hooks/*.sh .claude/hooks/*.conf 2>/dev/null | grep -v '^#\|comment\|^.*:#' | grep -c '%%' || echo 0)
+echo "✅ Placeholder sweep complete ($REMAINING remaining in scripts)"
+
+# ── 28. Git init ─────────────────────────────────────────────────────────────
 if [ ! -d ".git" ]; then
     git init -q
     git add -A
@@ -770,6 +956,29 @@ if [ ! -d ".git" ]; then
     echo "✅ Git initialized (master + dev branches, on dev)"
 else
     echo "⚠️  Git already initialized — skipping"
+fi
+
+# ── Placeholder inventory ─────────────────────────────────────────────────────
+echo ""
+echo "── Remaining %%PLACEHOLDERS%% to customize ──"
+PLACEHOLDER_COUNT=$(grep -rn '%%' "$RULES_FILE" 2>/dev/null | wc -l | tr -d ' ')
+if [ "$PLACEHOLDER_COUNT" -gt 0 ]; then
+    echo "  $RULES_FILE has $PLACEHOLDER_COUNT placeholders:"
+    grep -oE '%%[A-Z_]+%%' "$RULES_FILE" 2>/dev/null | sort -u | while read -r ph; do
+        case "$ph" in
+            %%PROJECT_NORTH_STAR%%)   echo "    $ph — your project's vision statement" ;;
+            %%TECH_STACK%%)           echo "    $ph — tech stack table (framework, language, tools)" ;;
+            %%COMMIT_FORMAT%%)        echo "    $ph — git commit message format" ;;
+            %%BUILD_TEST_INSTRUCTIONS%%) echo "    $ph — npm/cargo/make commands for build+test" ;;
+            %%OUTPUT_VERIFICATION_GATE%%) echo "    $ph — what to verify after each task" ;;
+            %%PROJECT_STOP_RULES%%)   echo "    $ph — project-specific STOP conditions" ;;
+            %%PROJECT_MEMORY_FILE%%)  echo "    $ph — auto: ${PROJECT_NAME_UPPER}_PROJECT_MEMORY.md" ;;
+            %%FIRST_PHASE%%)          echo "    $ph — first phase name (e.g., P1-PLAN)" ;;
+            *)                        echo "    $ph" ;;
+        esac
+    done
+else
+    echo "  ✅ No placeholders remaining"
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────────────

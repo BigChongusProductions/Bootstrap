@@ -11,9 +11,12 @@
 
 set -o pipefail
 
-BACKLOG="$HOME/.claude/dev-framework/BOOTSTRAP_BACKLOG.md"
-TEST_SUITE="$HOME/.claude/dev-framework/test_bootstrap_suite.sh"
-TEMPLATES="$HOME/.claude/dev-framework/templates"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+BACKLOG="$SCRIPT_DIR/BOOTSTRAP_BACKLOG.md"
+TEST_SUITE="$REPO_ROOT/tests/test_bootstrap_suite.sh"
+TEMPLATES="$REPO_ROOT/templates"
 
 # Colors
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
@@ -113,9 +116,6 @@ mark_applied() {
     local TARGET="$1"
     local TODAY
     TODAY=$(date "+%Y-%m-%d")
-
-    # Replace status line
-    sed -i '' "s/^\(### ${TARGET}.*\)$/\1/" "$BACKLOG"
 
     # Add Applied date if not present, update Status
     local TEMP="/tmp/backlog_apply_$$.md"

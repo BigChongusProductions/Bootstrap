@@ -1,3 +1,9 @@
+---
+framework: loopback-system
+version: 1.0
+extracted_from: production project (2026-03-17)
+---
+
 # Loopback System Reference
 
 Comprehensive reference for the parallel backward-fix track. Loopbacks handle defects discovered in earlier phases without reopening phase gates or blocking forward progress.

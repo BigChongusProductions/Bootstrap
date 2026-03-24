@@ -9,6 +9,10 @@
 @%%RULES_FILE%%
 @AGENT_DELEGATION.md
 
+> **Optional frameworks** (add @import lines above to enable):
+> `coherence-system`, `falsification`, `loopback-system`, `quality-gates`, `visual-verification`
+> Example: `@~/.claude/frameworks/quality-gates.md`
+
 > LESSONS file (`%%LESSONS_FILE%%`) is NOT @-imported — it grows unboundedly.
 > The session-start hook injects recent lessons. Read full file on demand for correction protocol.
 > Path-specific rules in `.claude/rules/` auto-inject when touching matching files.
