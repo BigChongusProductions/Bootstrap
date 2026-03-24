@@ -29,22 +29,6 @@ Ask these questions in order:
 
 ---
 
-## Loopback Types
-
-Types classify WHY you're going back, while severity classifies HOW URGENT. Only bugs can circuit-break.
-
-| Type | Icon | Default Severity | Can Be Gate-Critical? | Can Circuit-Break? |
-|------|------|------------------|-----------------------|--------------------|
-| `bug` | 🐛 | S3 | Yes | Yes (S1 only) |
-| `refactor` | 🔧 | S4 | No (hard rule) | No (hard rule) |
-| `enhancement` | ✨ | S3 | Override only | No (hard rule) |
-| `idea` | 💡 | S4 | No (hard rule) | No (hard rule) |
-| `debt` | 🏗️ | S3 | Yes | No (hard rule) |
-
-**Hard rules** are enforced by `db_queries.sh` — the tool will reject gate-critical or circuit-breaker flags on type-restricted loopbacks.
-
----
-
 ## Circuit Breaker Protocol (S1 Only)
 
 When an S1 loopback is created, ALL forward work pauses until it's acknowledged:
@@ -96,30 +80,15 @@ CREATED → ACKNOWLEDGED (S1 only) → IN_PROGRESS → DONE
 ### Creating Loopbacks
 
 ```bash
-# Shorthand flags (recommended):
-bash db_queries.sh quick "Extract helper" P1-CORE tag --refactor P1-CORE
-bash db_queries.sh quick "Add feature X" P0-FOUNDATION tag --idea P0-FOUNDATION
-bash db_queries.sh quick "Improve Y" P2-TASK-BOARD tag --enhance P2-TASK-BOARD
-bash db_queries.sh quick "Fix shortcut" P1-CORE tag --tech-debt P1-CORE
+# Standard loopback (S3 default)
+bash db_queries.sh quick "Fix layout bug" P1-CORE bug --loopback P1-CORE
 
-# Long form (equivalent):
-bash db_queries.sh quick "Extract helper" P1-CORE tag --loopback P1-CORE --type refactor
-
-# Bug loopback with severity (long form — bugs are the default type)
+# With severity
 bash db_queries.sh quick "Fix validation" P1-CORE bug --loopback P1-CORE --severity 2 --reason "wrong regex"
 
-# Gate-critical bug
+# Gate-critical
 bash db_queries.sh quick "Fix auth bypass" P2-AUTH bug --loopback P2-AUTH --severity 1 --gate-critical --reason "security hole"
 ```
-
-### Triaging Loopbacks from Inbox
-
-When triaging an INBOX item as a loopback, the `--type` flag is available:
-```bash
-bash db_queries.sh triage QK-1234 loopback P1-CORE --severity 2 --type refactor
-bash db_queries.sh triage QK-1234 loopback P0-FOUNDATION --type debt --gate-critical
-```
-If `--type` is omitted, the type defaults to `bug`. Use the correct type — it affects queue ordering and which severity/gate-critical options are permitted.
 
 ### ID Format
 
@@ -153,17 +122,9 @@ This auto-generates a structured lesson entry: what broke, why, what prevents re
 
 ### Task Queue (`db_queries.sh next`)
 
-The task queue interleaves loopbacks with forward work, in this order:
-
-1. Circuit breaker (S1 bugs only)
-2. S2 loopbacks
-3. Forward (ready)
-4. Improvements (non-bug loopbacks: refactor, enhancement, idea, debt)
-5. S3/S4 bug loopbacks
-6. Blocked
-
+The task queue interleaves loopbacks with forward work:
 ```
-⚡ CIRCUIT BREAKER (S1 bugs only — must acknowledge first)
+⚡ CIRCUIT BREAKER (S1 loopbacks — must acknowledge first)
   LB-0012  Fix auth bypass [S1] [gate-critical P2-AUTH]
 
 🔧 S2 LOOPBACKS (run before forward work when possible)
@@ -173,11 +134,7 @@ The task queue interleaves loopbacks with forward work, in this order:
   P3-01    Implement API client [sonnet]
   P3-02    Add error handling [haiku]
 
-🔨 IMPROVEMENTS (non-bug loopbacks — run when convenient)
-  LB-0011  Extract helper module [refactor] [P1-CORE]
-  LB-0013  Add feature X [enhancement] [P0-FOUNDATION]
-
-📝 S3/S4 BUG LOOPBACKS (run when convenient)
+📝 S3/S4 LOOPBACKS (run when convenient)
   LB-0008  Fix tooltip alignment [S3] [P1-CORE]
 
 🚫 BLOCKED
@@ -238,10 +195,8 @@ Outputs:
 | Skipping loopback-lesson | Same bugs recur | Always extract the lesson after resolving |
 | Marking everything gate-critical | Same as creating S1 for everything | Gate-critical = "would compromise the phase's quality bar" |
 | Fixing loopbacks without creating them | No paper trail, no analytics | Always create the task first, then fix it. The tracking matters. |
-| Using bug type for refactors/ideas | Inflates severity metrics, makes real bugs harder to find | Use the correct --type flag; shorthand flags make it easy |
 
 ---
 
 ## Changelog
-- 1.1: Added Loopback Types section (bug/refactor/enhancement/idea/debt), shorthand flags, improved queue order docs, new anti-pattern, triage --type flag
-- 1.0: Extracted from production project loopback-spec.md (25.9KB → condensed to essential reference)
+- 1.0: Extracted from RomaniaBattles loopback-spec.md (25.9KB → condensed to essential reference)

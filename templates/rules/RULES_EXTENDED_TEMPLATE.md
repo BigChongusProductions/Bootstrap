@@ -3,33 +3,6 @@
 > These rules are hook-enforced, conditional, or rarely referenced mid-session.
 > Load with: `read refs/rules-extended.md`
 
-## Blocker Detection Rules
-
-These rules apply continuously — at session start, before picking up each new task, and when task context changes.
-
-### What counts as a blocker
-
-- Any task assigned to Master or Gemini that is a prerequisite for the current or next Claude task
-- Any task marked with `blocked_by` where the blocker is not DONE
-- Any unresolved decision that downstream work depends on
-- Any external action required (e.g., device testing, asset creation, third-party submission)
-
-### When a blocker is detected
-
-- **Do not silently skip it.** Do not work around it. Do not start dependent work hoping the blocker will resolve itself.
-- Present the blocker clearly: what it is, who owns it, what depends on it.
-- State that dependent work cannot proceed.
-- Offer alternatives: resolve now, reprioritize, or explicit override.
-
-### Override mechanism
-
-If Master explicitly chooses to bypass a blocker:
-- Log the override in the session (conversation context)
-- The save-session skill captures it in NEXT_SESSION.md under "Overrides (active)"
-- The override does NOT clear the blocker — it remains flagged until actually resolved
-
----
-
 ## Code Standards
 %%CODE_STANDARDS%%
 
@@ -112,11 +85,9 @@ bash %%PROJECT_PATH%%/milestone_check.sh <PHASE>
 ## Deployment Mode: Agent Tool ✅ ACTIVE
 
 ### Model Delegation
-| Task Type | Model | Why |
-|-----------|-------|-----|
-| Architecture, code review, complex debugging | **You (Opus)** | Needs full-project reasoning |
-| Feature implementation, new files from clear spec | **Sonnet sub-agent** | Good code quality, 5x cheaper |
-| Repetitive edits, boilerplate, formatting, bulk renames | **Haiku sub-agent** | Fast, 20x cheaper, bounded tasks |
+> 📂 Full tier model and delegation rules: see `delegation` framework (@import in CLAUDE.md).
+
+**Project-specific model mapping:**
 %%EXTRA_MODEL_DELEGATION%%
 
 ### Sub-Agent Spawn Syntax
@@ -128,10 +99,6 @@ model: haiku
 [Task instructions here]
 ```
 Options: `haiku`, `sonnet`, `opus`, `inherit` (default = same as parent)
-
-### Sub-Agent Rules (supplements CLAUDE.md §4)
-- Sub-agents can read files but should only modify files you explicitly tell them to
-- If a sub-agent fails 2 times, take over the task yourself
 
 ### Budget Mode (optional)
 For token-conscious sessions, Master can start Claude Code with the `opusplan` model:
@@ -191,26 +158,6 @@ Master runs these in Cowork (the desktop app) at specific trigger points.
 | Trigger | Skill | What Master does |
 |---------|-------|-----------------|
 %%RECOMMENDED_SKILLS%%
-
-## Context Window Management
-
-Bootstrap target: **under 25K tokens**. Every token of instruction reduces space for actual code work.
-
-### Rules
-
-1. **Read PROJECT_MEMORY selectively.** Only read sections relevant to the current task — don't load the full file for every session.
-
-2. **Status lives in the DB and NEXT_SESSION.md, not in prose files.** Never read PROJECT_MEMORY for status, progress, or "what's next." Query `db_queries.sh` instead.
-
-3. **Sub-agents get minimal context.** When spawning sub-agents, pass ONLY: the task description, the specific file(s) to edit, and relevant architecture constraints. Never pass the full RULES or MEMORY files to a sub-agent.
-
-4. **Compress completed phases.** After each phase gate passes, compress that phase's detailed PROJECT_MEMORY sections to a 3-line summary. Move details to archive. The code is the documentation for completed work.
-
-5. **Keep instruction files stable for caching.** Prompt caching gives 90% discount on stable prefixes. Avoid editing the top half of rules files between sessions.
-
-6. **Session length awareness.** If you've been working for many tasks and responses are getting slower or less accurate, wrap up the current task, commit, and suggest starting a new session.
-
----
 
 ## MCP Servers & Plugins Available
 %%MCP_SERVERS%%

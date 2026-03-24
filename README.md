@@ -1,6 +1,6 @@
-# project-bootstrap v0.3.0
+# project-bootstrap v0.6.0
 
-Turns an empty folder into a fully operational development environment with 33 integrated systems — from discovery interview to working workflow engine. 100% coverage of the battle-tested framework from RomaniaBattles and MasterDashboard.
+Turns an empty folder into a fully operational development environment with 33 integrated systems — from discovery interview to working workflow engine. Battle-tested across RomaniaBattles, MasterDashboard, and TeaTimer.
 
 ## What This Does
 
@@ -8,7 +8,7 @@ Two-step bootstrap:
 
 1. **In Cowork** (`/new-project`): Interactive 4-round interview asks what you're building, who it's for, tech constraints, and framework preferences. Produces 4 spec files (ENVISION, RESEARCH, DECISIONS, FRAMEWORK) with zero TODOs.
 
-2. **In Claude Code** (`/activate-engine`): Reads specs, generates requirements + design docs (with review cycles), breaks design into phased tasks, populates SQLite DB, then deploys the full engine — workflow scripts, RULES.md (28 core sections + loopback system), CLAUDE.md (@-import chain), 9 framework files, refs/ progressive disclosure directory, git hooks, tracking files, and launch scripts. Runs 12-check verification at the end.
+2. **In Claude Code** (`/activate-engine`): Reads specs, generates requirements + design docs (with review cycles), breaks design into phased tasks, populates SQLite DB, then deploys the full engine — workflow scripts, RULES.md (@import deduplication), CLAUDE.md (@-import chain with 4 framework imports), AGENT_DELEGATION.md, refs/ progressive disclosure directory, hooks, custom agents, settings, git hooks, tracking files, and launch scripts. Runs 17-check verification at the end.
 
 ## Systems Covered (33/33)
 
@@ -31,55 +31,40 @@ Session protocol, phase gates, quality gates (4 levels), correction detection ga
 ## Architecture
 
 ```
-~/.claude/dev-framework/templates/    ← Canonical templates (shared across projects)
-  ├── scripts/                        ← 10 workflow scripts with %%PLACEHOLDER%% tokens
-  ├── frameworks/                     ← 9 framework files (project-agnostic)
-  └── rules/                          ← RULES + CLAUDE template files
+~/Projects/claude-project-bootstrap/  ← This repo (single source of truth)
+  ├── .claude-plugin/plugin.json      ← Plugin manifest
+  ├── bootstrap_project.sh            ← Main orchestrator script
+  ├── commands/                       ← 4 slash commands
+  ├── skills/                         ← 2 skills with reference docs
+  ├── templates/                      ← Canonical templates
+  │   ├── scripts/                    ← Workflow scripts + Python CLI (dbq/)
+  │   ├── frameworks/                 ← 9 framework files (project-agnostic)
+  │   ├── rules/                      ← RULES, CLAUDE, AGENT_DELEGATION templates
+  │   ├── hooks/                      ← Behavioral enforcement hooks
+  │   ├── agents/                     ← Sub-agent definitions (implementer, worker)
+  │   └── settings/                   ← settings.json templates
+  ├── tests/                          ← Bootstrap test suite
+  └── backlog/                        ← Development backlog + apply script
+
+~/.claude/                            ← Symlinks point here
+  ├── plugins/marketplaces/.../project-bootstrap → this repo
+  ├── dev-framework/templates → this repo/templates
+  └── templates/bootstrap_project.sh → this repo/bootstrap_project.sh
 
 ~/Desktop/MyProject/                  ← Your project (after /activate-engine)
-  ├── CLAUDE.md                       ← Entry point (@-imports chain)
-  ├── PROJECT_RULES.md                ← 29 sections, all placeholders filled
+  ├── CLAUDE.md                       ← Entry point (4 @framework imports + @RULES + @DELEGATION)
+  ├── PROJECT_RULES.md                ← Deduped — references frameworks, not inlines them
   ├── AGENT_DELEGATION.md             ← 6-tier model + task delegation map
-  ├── LESSONS_PROJECT.md              ← Correction log + insights
-  ├── PROJECT_MEMORY.md               ← Architecture decisions + context
-  ├── LEARNING_LOG.md                 ← Tools and techniques learned
-  ├── NEXT_SESSION.md                 ← Pre-computed session handoff
-  ├── frameworks/                     ← 9 framework files
-  │   ├── coherence-system.md
-  │   ├── correction-protocol.md
-  │   ├── delegation.md
-  │   ├── falsification.md
-  │   ├── loopback-system.md          ← NEW: full loopback reference
-  │   ├── phase-gates.md
-  │   ├── quality-gates.md
-  │   ├── session-protocol.md
-  │   └── visual-verification.md
   ├── refs/                           ← Progressive disclosure (on-demand)
-  │   ├── tool-inventory.md           ← Master tool/MCP/plugin catalog
-  │   ├── gotchas-workflow.md          ← Point-of-use warnings (grows over time)
-  │   ├── gotchas-frontend.md          ← (if UI project)
-  │   ├── skills-catalog.md            ← (if custom skills)
-  │   └── planned-integrations.md      ← (if deferred integrations)
   ├── specs/                          ← 6 spec files from bootstrap
+  ├── .claude/hooks/                  ← 8+ behavioral enforcement hooks
+  ├── .claude/agents/                 ← implementer + worker sub-agents
+  ├── .claude/settings.json           ← Permissions + hook wiring
   ├── db_queries.sh                   ← 51 commands across 7 tiers
   ├── session_briefing.sh             ← Signal computation (GREEN/YELLOW/RED)
-  ├── build_summarizer.sh             ← 4-level quality gates
-  ├── milestone_check.sh              ← Phase merge verification
-  ├── coherence_check.sh              ← Stale reference scanner
-  ├── coherence_registry.sh           ← Deprecated pattern registry
-  ├── harvest.sh                      ← Lesson promotion scanner
-  ├── work.sh / fix.sh                ← Launch scripts
   ├── project.db                      ← SQLite task database
-  └── .git/hooks/                     ← pre-commit + pre-push hooks
+  └── (10+ more workflow scripts)
 ```
-
-## Project Tiers
-
-| Tier | Scope | What You Get |
-|------|-------|-------------|
-| Micro (< 2 hours) | Script, small tool | Skip bootstrap — just build it |
-| Small (1-3 days) | Feature, weekend project | Abbreviated interview, basic specs, simple task list |
-| Full (3+ days) | App, product, multi-week build | Complete interview, all specs, task DB, full 33-system engine |
 
 ## Usage
 
@@ -101,49 +86,67 @@ Before your first `/activate-engine`, you need canonical templates:
 
 - **Have an existing project?** Run `/setup-templates` to extract templates from it
 - **Starting fresh?** `/activate-engine` will generate skeleton templates automatically
-- Templates live at `~/.claude/dev-framework/templates/` and are shared across all projects
+- Templates live at `~/.claude/dev-framework/templates/` (symlinked from this repo)
 
 ## Requirements
 
 - Claude Max plan (or Claude Code + Cowork access)
-- sqlite3 on your machine (for Full-tier projects)
+- sqlite3 on your machine
 - git initialized in project directory
 
 ## Reference Files (in plugin)
 
 | File | Purpose |
 |------|---------|
-| `loopback-system.md` | Full loopback system reference (severity, circuit breakers, gate-critical, analytics) |
-| `refs-scaffolding.md` | How to set up progressive disclosure refs/ directory |
-| `engine-deployment-guide.md` | Step-by-step engine deployment |
+| `engine-deployment-guide.md` | Step-by-step engine deployment (Phase D) |
 | `placeholder-registry.md` | All 30 %%PLACEHOLDER%% values with derivation sources |
 | `protocol-checklist.md` | 29-section RULES.md verification + 51 db_queries.sh commands |
 | `quality-gates-guide.md` | Per-tech-stack quality gate implementations |
-| `phase-planning-guide.md` | Phase templates, task breakdown rules, CLAUDE.md template |
+| `phase-planning-guide.md` | Phase templates, task breakdown rules |
+| `loopback-system.md` | Full loopback reference (severity, circuit breakers, gate-critical) |
+| `refs-scaffolding.md` | Progressive disclosure refs/ directory setup |
 | `interview-flow.md` | Discovery interview question bank + adaptive rules |
 | `spec-output-schemas.md` | Schema for all 4 spec files |
 
 ## Changelog
 
+### v0.6.0
+- **Standalone repo** — extracted from ~/.claude/ into git-tracked repository with symlinks
+- **Framework deduplication** — RULES_TEMPLATE.md now @imports frameworks instead of inlining (-56%, 285→126 lines)
+- **RULES_EXTENDED_TEMPLATE.md** trimmed — removed blocker detection, context management, sub-agent rules now in frameworks (-25%, 216→163 lines)
+- **CLAUDE_TEMPLATE.md** adds 4 framework @imports (session-protocol, phase-gates, correction-protocol, delegation)
+- **New AGENT_DELEGATION_TEMPLATE.md** — extracted from production Romania Battles project (50 lines, fully deduped)
+- **Removed Lite engine tier** — unified to single Full engine for all projects
+- **Removed 5 Lite template files** (RULES_TEMPLATE_LITE, CLAUDE_TEMPLATE_LITE, db_queries_lite, settings_lite, session-start-check-lite)
+- **Synced loopback-system.md** template to match deployed version (-45 lines)
+- **bootstrap_project.sh** moved into repo (was only in ~/.claude/templates/)
+- Description updated: mentions Python CLI and consolidated pre-edit hooks
+- Added keywords: hooks, agents, settings, rules
+
+### v0.5.0
+- bootstrap-activate SKILL.md expanded (425→608 lines) — hooks, agents, settings, rules deployment
+- 3 commands updated (activate-engine, setup-templates, spec-status)
+- 4 reference files updated
+- Plugin keywords expanded
+
+### v0.4.0
+- Removed end-session skill
+- Updated placeholder-registry.md (+6 entries)
+
 ### v0.3.0
-- Added `loopback-system.md` as 9th framework file (full S1-S4 system reference)
-- Added `refs-scaffolding.md` for progressive disclosure directory setup
-- Added gotcha generation protocol to lesson extraction (refs/gotchas-*.md)
-- Added refs/ directory scaffolding to engine deployment (tool-inventory, skills-catalog, gotchas)
-- Added harvest.sh to template script list (10 scripts total)
-- D7 verification expanded to 12 checks (added refs/ and loopback verification)
-- RULES.md expanded to 29 sections (added Loopback System)
+- Added loopback-system.md as 9th framework file
+- Added refs-scaffolding.md for progressive disclosure
+- Added gotcha generation protocol
+- D7 verification expanded to 12 checks
 - 100% coverage against Battles framework reference
 
 ### v0.2.0
 - Added Phase D (Engine Deployment) with 7 sub-steps
 - Added FRAMEWORK.md as 4th spec file
 - Added Round 4 (Framework Configuration) to discovery interview
-- Added `/setup-templates` command for canonical template management
-- Coverage expanded from partial to 33/33 systems
-- Added 5 new reference files (engine-deployment-guide, protocol-checklist, quality-gates-guide)
-- 30 %%PLACEHOLDER%% values fully documented
-- 51 db_queries.sh commands organized into 7 tiers
+- Added `/setup-templates` command
+- 33/33 systems coverage
+- 30 %%PLACEHOLDER%% values documented, 51 db_queries.sh commands
 
 ### v0.1.0
 - Initial release: discovery interview + basic activate flow
