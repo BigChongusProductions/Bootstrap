@@ -30,11 +30,6 @@ Before doing anything, verify ALL of these:
 
 If `NEXT_SESSION.md` exists with `Handoff Source: COWORK`, read it for context about what was decided during discovery.
 
-8. **Engine tier check:** Read `specs/FRAMEWORK.md` for the `tier:` field (under "## Engine Tier").
-   - If `tier: Small` → set `ENGINE_TIER=Lite`. Announce: "Deploying **Lite engine** (simplified rules, 3 hooks, restricted CLI)."
-   - If `tier: Full` or field is missing → set `ENGINE_TIER=Full`. Proceed as usual.
-   - `tier: Micro` should never reach activate (Micro = skip bootstrap entirely).
-
 ---
 
 ## Phase B: Specification
@@ -47,7 +42,7 @@ Read DECISIONS.md to extract the tech stack and project structure. Create:
 2. A `.gitignore` appropriate for the chosen tech stack
 3. `refs/README.md` — progressive disclosure directory
 4. `backups/` directory for DB backups
-5. Copy `frameworks/` directory (all 9 files) from `~/.claude/dev-framework/frameworks/` — **SKIP if ENGINE_TIER=Lite** (Lite projects have no frameworks directory)
+5. Copy `frameworks/` directory (all 9 files) from `~/.claude/dev-framework/frameworks/`
 6. Initialize git repo if not already initialized, create `dev` branch, make initial commit
 
 ### B2: Fill Placeholders
@@ -128,11 +123,9 @@ Read design.md. Break it into implementation phases. For each phase, create atom
 
 Present the full delegation table to the user. **Wait for approval before proceeding.**
 
-**If ENGINE_TIER=Lite:** Skip the 6-tier delegation table. Tasks are assigned to CLAUDE or MASTER only (2-tier). Still break into phases and atomic tasks, but no Sonnet/Haiku/Gemini/Grok/Ollama tiers.
-
 ### C2: Populate Database
 
-1. **Copy db_queries.sh** from `~/.claude/dev-framework/templates/db_queries.template.sh` — **or from `db_queries_lite.template.sh` if ENGINE_TIER=Lite**
+1. **Copy db_queries.sh** from `~/.claude/dev-framework/templates/db_queries.template.sh`
 2. **Customize** — run sed replacements for project-specific values (DB name, project name, LESSONS file name). See `references/placeholder-registry.md` "Template Customization" section.
 3. **Create the database** — `touch [project].db && bash db_queries.sh init-db` (creates all tables: tasks, phase_gates, milestone_confirmations, loopback_acks, assumptions, db_snapshots, decisions, sessions). Then run `bash db_queries.sh health` to verify. **Do NOT use `health` to create the schema** — `health` only checks tables, it does not create them.
 4. **INSERT all tasks** with full metadata: id, phase, assignee, title, priority, tier, skill, needs_browser, sort_order, blocked_by, track='forward'
@@ -160,108 +153,9 @@ Present the full delegation table to the user. **Wait for approval before procee
 
 Run `bash db_queries.sh delegation-md` to generate the delegation map in AGENT_DELEGATION.md from the database. This replaces any placeholder content.
 
-**If ENGINE_TIER=Lite:** Skip `delegation-md` (not in Lite CLI). Instead, generate a minimal AGENT_DELEGATION.md with a 2-tier table (You/Master) listing tasks by phase.
-
 ---
 
 ## Phase D: Engine Deployment
-
-### D0: Tier Check
-
-Read `ENGINE_TIER` (set in Phase A). **If ENGINE_TIER=Lite, execute D-LITE below instead of D1-D11.**
-
-### D-LITE: Lite Engine Deployment
-
-Condensed single-phase deployment for Small-tier projects. Uses Lite templates from `~/.claude/dev-framework/templates/`.
-
-**1. Deploy db_queries.sh (Lite)**
-- Copy `~/.claude/dev-framework/templates/scripts/db_queries_lite.template.sh` → `db_queries.sh`
-- Fill placeholders: `%%PROJECT_DB%%`, `%%PROJECT_NAME%%`, `%%LESSONS_FILE%%`, `%%PHASES%%`
-- `chmod +x db_queries.sh`
-- `bash db_queries.sh init-db && bash db_queries.sh health`
-
-**2. Deploy RULES.md (Lite)**
-- Generate `[PROJECT]_RULES.md` from `~/.claude/dev-framework/templates/rules/RULES_TEMPLATE_LITE.md`
-- Fill ALL placeholders: `%%PROJECT_NAME%%`, `%%PROJECT_NORTH_STAR%%`, `%%PROJECT_PATH%%`, `%%TECH_STACK%%`, `%%COMMIT_FORMAT%%`, `%%BUILD_TEST_INSTRUCTIONS%%`, `%%CODE_STANDARDS%%`, `%%PROJECT_MEMORY_FILE%%`, `%%PROJECT_STOP_RULES%%`, `%%MCP_SERVERS%%`, `%%FIRST_PHASE%%`
-- Verify: `grep -rn '%%' [PROJECT]_RULES.md` must return zero
-
-**3. Deploy CLAUDE.md (Lite)**
-- Generate from `~/.claude/dev-framework/templates/rules/CLAUDE_TEMPLATE_LITE.md`
-- Fill: `%%PROJECT_NAME%%`, `%%RULES_FILE%%`
-
-**4. Deploy Tracking Files**
-- `LESSONS_[PROJECT].md` — empty corrections log
-- `[PROJECT]_PROJECT_MEMORY.md` — §1 Overview, §2 Architecture, §3 File Structure (from specs)
-- `AGENT_DELEGATION.md` — 2-tier table (already generated in C3)
-- `NEXT_SESSION.md` — Handoff: source=BOOTSTRAP, signal=GREEN, first task
-- Skip: LEARNING_LOG.md (Full-tier only)
-
-**5. Deploy Hooks (3 only)**
-```bash
-mkdir -p .claude/hooks
-```
-- Copy `correction-detector.template.sh` → `.claude/hooks/correction-detector.sh` (fill `%%LESSON_LOG_COMMAND%%`)
-- Copy `protect-architecture.template.sh` → `.claude/hooks/protect-architecture.sh`
-- Copy `session-start-check-lite.template.sh` → `.claude/hooks/session-start-check.sh`
-- `chmod +x .claude/hooks/*.sh`
-
-**6. Deploy settings.json (Lite)**
-- Copy `~/.claude/dev-framework/templates/settings/settings_lite.template.json` → `.claude/settings.json`
-- Fill `%%PERMISSION_ALLOW%%` with tech-stack-specific patterns
-- Verify: `python3 -c "import json; json.load(open('.claude/settings.json'))"`
-
-**7. Deploy Git Hooks (simplified)**
-- Create `.git/hooks/pre-commit` with build/lint check only (no coherence, no knowledge nag)
-- `chmod +x .git/hooks/pre-commit`
-- Skip: pre-push (Full-tier only)
-
-**8. Lite Verification (7 checks)**
-```bash
-# 1. DB health
-bash db_queries.sh health
-
-# 2. Task queue
-bash db_queries.sh next
-
-# 3. @-import chain
-grep -oP '^@\K.+' CLAUDE.md | while read f; do
-    [ -f "$f" ] && echo "✅ $f" || echo "❌ MISSING: $f"
-done
-
-# 4. Placeholder scan — must be zero
-grep -rn '%%' *.md *.sh .claude/ 2>/dev/null | grep -v '.git/'
-
-# 5. Hooks executable
-for h in .claude/hooks/*.sh; do
-    [ -x "$h" ] && echo "✅ $(basename $h)" || echo "❌ NOT EXECUTABLE: $h"
-done
-
-# 6. settings.json valid
-python3 -c "import json; d=json.load(open('.claude/settings.json')); print(f'✅ settings.json ({len(d.get(\"hooks\",{}))} hook events)')"
-
-# 7. No hardcoded references
-LEAKS=$(grep -rn 'chonkius\|MasterDashboard' . --include="*.sh" --include="*.md" --include="*.json" 2>/dev/null | grep -v '.git/' | wc -l | tr -d ' ')
-[ "$LEAKS" -eq 0 ] && echo "✅ No hardcoded refs" || echo "❌ $LEAKS hardcoded ref(s)"
-```
-
-**If ALL 7 pass:**
-```
-Bootstrap complete (Lite Engine).
-Signal: GREEN
-Engine: LITE — 3 hooks, 16 CLI commands, simplified rules
-First task: [task-id] — [title]
-Launch: cd [project-path] && claude
-```
-
-Commit to git on `dev`: `bootstrap: lite engine deployment complete`
-
-**Skip in Lite (vs Full D1-D11):** session_briefing.sh, milestone_check.sh, coherence_check.sh, coherence_registry.sh, build_summarizer.sh, work.sh, fix.sh, generate_board.py, harvest.sh, save_session.sh, shared_signal.sh, all 9 frameworks, 8 of 11 hooks, custom agents (.claude/agents/), path rules (.claude/rules/), refs/ directory, pre-push hook, LEARNING_LOG.md.
-
----
-
-### D1-D11: Full Engine Deployment
-
-**If ENGINE_TIER=Full, execute D1-D11 below (unchanged from current behavior).**
 
 This is where ALL infrastructure scripts, protocol documentation, tracking files, enforcement hooks, custom agents, path rules, settings, git hooks, and launch scripts are created. After Phase D, the project has a fully operational development environment with both behavioral guidelines AND programmatic enforcement.
 

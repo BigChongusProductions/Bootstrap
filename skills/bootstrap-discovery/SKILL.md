@@ -80,8 +80,6 @@ Q4.1: "Your project will include all core development systems (session protocol,
 
 Q4.2: "Any project-specific things Claude should NEVER do in this project?" (free text)
 
-**Engine Tier:** Based on the Step 0 classification (Small or Full), include the "Engine Tier" section in FRAMEWORK.md with the tier and rationale. This determines whether `/activate-engine` deploys the Lite engine (Small) or Full engine (Full).
-
 **Generate:** `specs/FRAMEWORK.md` using the schema in `references/spec-output-schemas.md`.
 
 ## Step 5: Validation & Handoff
