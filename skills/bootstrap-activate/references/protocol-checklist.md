@@ -145,7 +145,7 @@ bash db_queries.sh tag-session <tag>       # Tag current session
 bash db_queries.sh session-tags            # List session tags
 bash db_queries.sh session-file <id>       # Export session to markdown
 bash db_queries.sh tag-browser             # Launch tag browser UI
-bash db_queries.sh start                   # Initialize DB from DECISIONS.md
+bash db_queries.sh start                   # Initialize DB from BLUEPRINT.md
 bash db_queries.sh decisions               # List decisions made
 bash db_queries.sh confirmations           # List milestone confirmations
 ```

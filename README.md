@@ -1,4 +1,4 @@
-# project-bootstrap v0.6.1
+# project-bootstrap v0.7.0
 
 Turns an empty folder into a fully operational development environment with 33 integrated systems — from discovery interview to working workflow engine. Battle-tested across RomaniaBattles, MasterDashboard, and TeaTimer.
 
@@ -6,7 +6,7 @@ Turns an empty folder into a fully operational development environment with 33 i
 
 Two-step bootstrap:
 
-1. **In Cowork** (`/new-project`): Interactive 4-round interview asks what you're building, who it's for, tech constraints, and framework preferences. Produces 4 spec files (ENVISION, RESEARCH, DECISIONS, FRAMEWORK) with zero TODOs.
+1. **In Cowork** (`/new-project`): Collaborative discovery process — you describe your idea, Claude researches feasibility, evaluates tech stacks, proposes architecture, and debates trade-offs with you. Produces 4 spec files (VISION, RESEARCH, BLUEPRINT, INFRASTRUCTURE) with zero TODOs.
 
 2. **In Claude Code** (`/activate-engine`): Reads specs, generates requirements + design docs (with review cycles), breaks design into phased tasks, populates SQLite DB, then deploys the full engine — workflow scripts, RULES.md (@import deduplication), CLAUDE.md (@-import chain with 4 framework imports), AGENT_DELEGATION.md, refs/ progressive disclosure directory, hooks, custom agents, settings, git hooks, tracking files, and launch scripts. Runs 17-check verification at the end.
 
@@ -25,7 +25,7 @@ Session protocol, phase gates, quality gates (4 levels), correction detection ga
 
 ## Skills
 
-- **bootstrap-discovery** — Cowork conversational interview (4 rounds, 10 questions, adaptive flow)
+- **bootstrap-discovery** — Collaborative discovery (open-ended conversation with real web research, tech evaluation, architecture design)
 - **bootstrap-activate** — Claude Code engine deployment (4 phases: Validate → Specify → Plan → Deploy)
 
 ## Architecture
@@ -147,7 +147,7 @@ Before your first `/activate-engine`, you need canonical templates:
 
 ### v0.2.0
 - Added Phase D (Engine Deployment) with 7 sub-steps
-- Added FRAMEWORK.md as 4th spec file
+- Added FRAMEWORK.md as 4th spec file (now INFRASTRUCTURE.md in v0.7.0)
 - Added Round 4 (Framework Configuration) to discovery interview
 - Added `/setup-templates` command
 - 33/33 systems coverage

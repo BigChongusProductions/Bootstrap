@@ -95,13 +95,13 @@ When adding a gotcha:
 
 ---
 
-## Conditional Starter Refs (based on FRAMEWORK.md)
+## Conditional Starter Refs (based on INFRASTRUCTURE.md)
 
 ### refs/gotchas-frontend.md (if project has UI)
 
 Same template as gotchas-workflow.md but for frontend-specific issues (SSR guards, animation pitfalls, responsive edge cases).
 
-### refs/planned-integrations.md (if DECISIONS.md lists deferred integrations)
+### refs/planned-integrations.md (if BLUEPRINT.md lists deferred integrations)
 
 ```markdown
 # Planned Integrations
@@ -109,7 +109,7 @@ Same template as gotchas-workflow.md but for frontend-specific issues (SSR guard
 
 | Integration | Phase | Status | Notes |
 |-------------|-------|--------|-------|
-[Populated from DECISIONS.md "Deferred to v2+" section]
+[Populated from BLUEPRINT.md "Deferred to v2+" section]
 ```
 
 ### refs/visual-verification.md (if visual verification is active)
@@ -158,7 +158,7 @@ mkdir -p refs/
 # - refs/tool-inventory.md (detected tools)
 # - refs/gotchas-workflow.md (empty template)
 
-# Conditionally create (based on FRAMEWORK.md):
+# Conditionally create (based on INFRASTRUCTURE.md):
 # - refs/skills-catalog.md (if custom skills)
 # - refs/gotchas-frontend.md (if UI project)
 # - refs/planned-integrations.md (if deferred integrations exist)

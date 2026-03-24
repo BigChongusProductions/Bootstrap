@@ -182,7 +182,7 @@ create_specs() {
 }
 
 create_specs_p1() {
-  cat > "$P_DIR/specs/ENVISION.md" << 'ENVISION_EOF'
+  cat > "$P_DIR/specs/VISION.md" << 'VISION_EOF'
 # TestWebApp — Vision
 
 ## One-Paragraph Pitch
@@ -199,9 +199,9 @@ Me — tired of losing bookmarks across browsers and devices.
 ## What's NOT in v1
 - Browser extension for one-click saving
 - Cloud sync
-ENVISION_EOF
+VISION_EOF
 
-  cat > "$P_DIR/specs/DECISIONS.md" << 'DECISIONS_EOF'
+  cat > "$P_DIR/specs/BLUEPRINT.md" << 'BLUEPRINT_EOF'
 # TestWebApp — Decisions
 
 ## Tech Stack
@@ -226,9 +226,9 @@ ENVISION_EOF
 
 ## Gate Check
 - [x] All decisions locked
-DECISIONS_EOF
+BLUEPRINT_EOF
 
-  cat > "$P_DIR/specs/FRAMEWORK.md" << FRAMEWORK_EOF
+  cat > "$P_DIR/specs/INFRASTRUCTURE.md" << INFRASTRUCTURE_EOF
 # TestWebApp — Framework Specification
 
 ## Project Identity
@@ -309,7 +309,7 @@ This project HAS visual UI — visual verification gate is ACTIVE. Use screensho
 | .env* | Environment secrets |
 | *.db-journal, *.db-wal | SQLite temp files |
 | .DS_Store | macOS metadata |
-FRAMEWORK_EOF
+INFRASTRUCTURE_EOF
 
   cat > "$P_DIR/specs/RESEARCH.md" << 'RESEARCH_EOF'
 # TestWebApp — Research
@@ -326,7 +326,7 @@ RESEARCH_EOF
 }
 
 create_specs_p2() {
-  cat > "$P_DIR/specs/ENVISION.md" << 'ENVISION_EOF'
+  cat > "$P_DIR/specs/VISION.md" << 'VISION_EOF'
 # RustCLI — Vision
 
 ## One-Paragraph Pitch
@@ -343,9 +343,9 @@ Me — renaming photos, downloaded files, and project assets repeatedly.
 ## What's NOT in v1
 - GUI
 - Network filesystem support
-ENVISION_EOF
+VISION_EOF
 
-  cat > "$P_DIR/specs/DECISIONS.md" << 'DECISIONS_EOF'
+  cat > "$P_DIR/specs/BLUEPRINT.md" << 'BLUEPRINT_EOF'
 # RustCLI — Decisions
 
 ## Tech Stack
@@ -370,9 +370,9 @@ ENVISION_EOF
 
 ## Gate Check
 - [x] All decisions locked
-DECISIONS_EOF
+BLUEPRINT_EOF
 
-  cat > "$P_DIR/specs/FRAMEWORK.md" << FRAMEWORK_EOF
+  cat > "$P_DIR/specs/INFRASTRUCTURE.md" << INFRASTRUCTURE_EOF
 # RustCLI — Framework Specification
 
 ## Project Identity
@@ -449,7 +449,7 @@ Not applicable — CLI tool, no visual UI.
 | Cargo.lock | Lock file (binary project: include in repo; library: exclude) |
 | *.db-journal, *.db-wal | SQLite temp files |
 | .DS_Store | macOS metadata |
-FRAMEWORK_EOF
+INFRASTRUCTURE_EOF
 
   # Small tier — RESEARCH.md is N/A
   cat > "$P_DIR/specs/RESEARCH.md" << 'RESEARCH_EOF'
@@ -461,7 +461,7 @@ RESEARCH_EOF
 }
 
 create_specs_p3() {
-  cat > "$P_DIR/specs/ENVISION.md" << 'ENVISION_EOF'
+  cat > "$P_DIR/specs/VISION.md" << 'VISION_EOF'
 # FastAPIService — Vision
 
 ## One-Paragraph Pitch
@@ -479,9 +479,9 @@ Me — a developer who wants a local note API that other tools can integrate wit
 ## What's NOT in v1
 - UI (API-only)
 - Cloud hosting
-ENVISION_EOF
+VISION_EOF
 
-  cat > "$P_DIR/specs/DECISIONS.md" << 'DECISIONS_EOF'
+  cat > "$P_DIR/specs/BLUEPRINT.md" << 'BLUEPRINT_EOF'
 # FastAPIService — Decisions
 
 ## Tech Stack
@@ -508,9 +508,9 @@ ENVISION_EOF
 
 ## Gate Check
 - [x] All decisions locked
-DECISIONS_EOF
+BLUEPRINT_EOF
 
-  cat > "$P_DIR/specs/FRAMEWORK.md" << FRAMEWORK_EOF
+  cat > "$P_DIR/specs/INFRASTRUCTURE.md" << INFRASTRUCTURE_EOF
 # FastAPIService — Framework Specification
 
 ## Project Identity
@@ -593,7 +593,7 @@ Not applicable — API service, no visual UI.
 | .env | Secrets |
 | *.db-journal, *.db-wal | SQLite temp files |
 | .DS_Store | macOS metadata |
-FRAMEWORK_EOF
+INFRASTRUCTURE_EOF
 
   cat > "$P_DIR/specs/RESEARCH.md" << 'RESEARCH_EOF'
 # FastAPIService — Research
@@ -610,7 +610,7 @@ RESEARCH_EOF
 }
 
 create_specs_p4() {
-  cat > "$P_DIR/specs/ENVISION.md" << 'ENVISION_EOF'
+  cat > "$P_DIR/specs/VISION.md" << 'VISION_EOF'
 # SwiftDesktopApp — Vision
 
 ## One-Paragraph Pitch
@@ -627,9 +627,9 @@ Me — wanting minimal distraction from a native macOS tool that lives in the me
 ## What's NOT in v1
 - iOS companion
 - iCloud sync
-ENVISION_EOF
+VISION_EOF
 
-  cat > "$P_DIR/specs/DECISIONS.md" << 'DECISIONS_EOF'
+  cat > "$P_DIR/specs/BLUEPRINT.md" << 'BLUEPRINT_EOF'
 # SwiftDesktopApp — Decisions
 
 ## Tech Stack
@@ -655,9 +655,9 @@ ENVISION_EOF
 
 ## Gate Check
 - [x] All decisions locked
-DECISIONS_EOF
+BLUEPRINT_EOF
 
-  cat > "$P_DIR/specs/FRAMEWORK.md" << FRAMEWORK_EOF
+  cat > "$P_DIR/specs/INFRASTRUCTURE.md" << INFRASTRUCTURE_EOF
 # SwiftDesktopApp — Framework Specification
 
 ## Project Identity
@@ -738,7 +738,7 @@ This project HAS visual UI — visual verification gate is ACTIVE. Use screensho
 | build/ | Build output |
 | *.db-journal, *.db-wal | SQLite temp files |
 | .DS_Store | macOS metadata |
-FRAMEWORK_EOF
+INFRASTRUCTURE_EOF
 
   cat > "$P_DIR/specs/RESEARCH.md" << 'RESEARCH_EOF'
 # SwiftDesktopApp — Research
@@ -1029,7 +1029,7 @@ xcodebuild test 2>&1 | tail -20"
   esac
 
   export RULES_PLACEHOLDER_PROJECT_NAME="$P_NAME"
-  export RULES_PLACEHOLDER_PROJECT_NORTH_STAR="$(head -2 specs/FRAMEWORK.md | grep 'North Star' | sed 's/.*North Star: //' | tr -d '*')"
+  export RULES_PLACEHOLDER_PROJECT_NORTH_STAR="$(head -2 specs/INFRASTRUCTURE.md | grep 'North Star' | sed 's/.*North Star: //' | tr -d '*')"
   export RULES_PLACEHOLDER_PROJECT_PATH="$P_DIR"
   export RULES_PLACEHOLDER_PROJECT_MEMORY_FILE="$P_MEMORY"
   export RULES_PLACEHOLDER_FIRST_PHASE="${PHASES_ARRAY[0]}"
@@ -1150,7 +1150,7 @@ LESSEOF
 # $P_NAME — Project Memory
 
 ## §1 Overview
-$(grep "One-Paragraph Pitch" specs/ENVISION.md -A 2 | tail -1 | sed 's/^> //' | xargs)
+$(grep "One-Paragraph Pitch" specs/VISION.md -A 2 | tail -1 | sed 's/^> //' | xargs)
 
 ## §2 Section Lookup
 | What you need | Where to look |
@@ -1160,7 +1160,7 @@ $(grep "One-Paragraph Pitch" specs/ENVISION.md -A 2 | tail -1 | sed 's/^> //' | 
 | File structure | §4 below |
 
 ## §3 Architecture
-$(grep -A 10 "Tech Stack" specs/DECISIONS.md | head -8 || echo "See specs/DECISIONS.md")
+$(grep -A 10 "Tech Stack" specs/BLUEPRINT.md | head -8 || echo "See specs/BLUEPRINT.md")
 
 ## §4 File Structure
 \`\`\`
@@ -1329,7 +1329,7 @@ SCEOF
 
 | Integration | Why Deferred | Notes for v2 |
 |-------------|-------------|--------------|
-| *See specs/DECISIONS.md deferred scope items* | Out of v1 scope | Re-evaluate after v1 ships |
+| *See specs/BLUEPRINT.md deferred scope items* | Out of v1 scope | Re-evaluate after v1 ships |
 PIEOF
     info "Created refs/planned-integrations.md (Deferred=YES)"
   fi

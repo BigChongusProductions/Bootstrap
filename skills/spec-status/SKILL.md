@@ -4,7 +4,7 @@ description: >
   Show bootstrap progress and spec completion status. Use when the user runs /spec-status,
   says "check status", "where are we", "bootstrap status", or wants to see the current
   state of their project's bootstrap process.
-version: 0.1.0
+version: 0.2.0
 ---
 
 # Spec Status
@@ -14,10 +14,10 @@ Check and report the current bootstrap status for this project.
 1. Read `.bootstrap_mode` if it exists. Report the current mode (DISCOVERY / SPECIFICATION / PLANNING / ENGINE_DEPLOY / COMPLETE / not found).
 
 2. Check each spec file for completeness:
-   - `specs/ENVISION.md` — exists? contains "TODO"?
+   - `specs/VISION.md` — exists? contains "TODO"?
    - `specs/RESEARCH.md` — exists? contains "TODO"?
-   - `specs/DECISIONS.md` — exists? contains "TODO"?
-   - `specs/FRAMEWORK.md` — exists? contains "TODO"?
+   - `specs/BLUEPRINT.md` — exists? contains "TODO"?
+   - `specs/INFRASTRUCTURE.md` — exists? contains "TODO"?
    - `specs/requirements.md` — exists? contains "> NOTE:"?
    - `specs/design.md` — exists? contains "> NOTE:"?
 
@@ -43,12 +43,12 @@ Check and report the current bootstrap status for this project.
 Bootstrap Status: [MODE]
 
 Specs:
-  ENVISION.md      [DONE / X TODOs / MISSING]
-  RESEARCH.md      [DONE / X TODOs / MISSING / N/A]
-  DECISIONS.md     [DONE / X TODOs / MISSING]
-  FRAMEWORK.md     [DONE / X TODOs / MISSING]
-  requirements.md  [DONE / X notes / MISSING]
-  design.md        [DONE / X notes / MISSING]
+  VISION.md          [DONE / X TODOs / MISSING]
+  RESEARCH.md        [DONE / X TODOs / MISSING]
+  BLUEPRINT.md       [DONE / X TODOs / MISSING]
+  INFRASTRUCTURE.md  [DONE / X TODOs / MISSING]
+  requirements.md    [DONE / X notes / MISSING]
+  design.md          [DONE / X notes / MISSING]
 
 Engine:
   Placeholders:    [0 remaining / X remaining]

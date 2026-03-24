@@ -67,7 +67,7 @@ If the user has an existing project with the full framework (like MasterDashboar
 
 If no existing project is available, generate minimal templates from the spec files:
 
-1. Read `specs/DECISIONS.md` and `specs/FRAMEWORK.md` for tech stack and framework choices.
+1. Read `specs/BLUEPRINT.md` and `specs/INFRASTRUCTURE.md` for tech stack and framework choices.
 
 2. Generate skeleton templates with correct structure but `%%PLACEHOLDER%%` tokens throughout.
 

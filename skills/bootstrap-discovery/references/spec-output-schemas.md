@@ -1,23 +1,23 @@
 # Bootstrap Discovery — Spec Output Schemas
 
-Reference file for `bootstrap-discovery` skill. Contains output format templates for all four spec files, quality rules, and correction checklist.
+Reference file for `bootstrap-discovery` skill. Contains output format templates for all four spec files, quality rules, and validation checklist.
 
 ---
 
 ## Overview
 
-The discovery process produces four spec files in sequence:
+The discovery process produces four spec files:
 
-1. **ENVISION.md** — What and why (product vision)
-2. **RESEARCH.md** — Market context and technical options
-3. **DECISIONS.md** — Constrained choices (budget, tech stack, scope)
-4. **FRAMEWORK.md** — Project infrastructure (systems, gates, models, workflows)
+1. **VISION.md** — What and why (product vision, audience, scope)
+2. **RESEARCH.md** — Evidence base (prior art, feasibility, tech evaluation)
+3. **BLUEPRINT.md** — Product architecture (tech stack, data model, architecture, decisions)
+4. **INFRASTRUCTURE.md** — Development architecture (systems, delegation, hooks, monitoring)
 
 Each has a specific structure, quality standards, and validation rules.
 
 ---
 
-## File 1: ENVISION.md
+## File 1: VISION.md
 
 **Purpose:** Pitch the project to someone unfamiliar with it. Answer "what is this and why does it matter?"
 
@@ -77,6 +77,24 @@ v1 is complete when:
 - "UI is polished" ❌ (not measurable)
 - "Users can create accounts" ✓ (observable)
 
+#### V1 Scope (Feature List with Priorities)
+
+**Template:**
+```markdown
+## V1 Scope
+
+### Critical (app is broken without these)
+- [Feature] — [brief description]
+- [Feature] — [brief description]
+
+### Core (app is useful without these, but they add major value)
+- [Feature] — [brief description]
+
+### Deferred to v2+
+- [Feature] — why deferred: [reason]
+- [Feature] — why deferred: [reason]
+```
+
 #### What This Does NOT Do (Exclusions)
 
 Explicit list of out-of-scope features or use cases.
@@ -90,11 +108,9 @@ Explicit list of out-of-scope features or use cases.
 - [Integration] — why it's not included
 ```
 
-**Quality gate:** At least 3 explicit exclusions. If you skip this, you haven't defined scope tightly enough.
+**Quality gate:** At least 3 explicit exclusions.
 
 #### What It Replaces or Improves
-
-Prior solutions and why this is better.
 
 **Template:**
 ```markdown
@@ -110,7 +126,7 @@ Prior solutions and why this is better.
 
 ## File 2: RESEARCH.md
 
-**Purpose:** Ground decisions in evidence. Answer "are there existing solutions? What are the technical tradeoffs?"
+**Purpose:** Ground decisions in evidence from real research. Answer "what exists, what's viable, and what are the risks?"
 
 **Audience:** Project team (technical and non-technical)
 
@@ -122,121 +138,133 @@ Prior solutions and why this is better.
 ```markdown
 ## Existing Solutions
 
-| Product | How it works | Strengths | Weaknesses | Price |
-|---------|-------------|----------|-----------|-------|
-| [Tool A] | [Brief description] | [Why it's good] | [Gap it leaves] | [Cost] |
-| [Tool B] | [Brief description] | [Why it's good] | [Gap it leaves] | [Cost] |
-| [Tool C] | [Brief description] | [Why it's good] | [Gap it leaves] | [Cost] |
+| Product | How it works | Strengths | Weaknesses | Price | Source |
+|---------|-------------|----------|-----------|-------|--------|
+| [Tool A] | [Brief description] | [Why it's good] | [Gap it leaves] | [Cost] | [URL] |
+| [Tool B] | [Brief description] | [Why it's good] | [Gap it leaves] | [Cost] | [URL] |
+| [Tool C] | [Brief description] | [Why it's good] | [Gap it leaves] | [Cost] | [URL] |
+
+### What We Learn From These
+- [Lesson from Tool A's approach]
+- [Lesson from Tool B's failure mode]
+- [Pattern that works across all of them]
 ```
 
 **Quality gates:**
-- Minimum 3 entries (no analysis with < 3 comparisons)
-- Each tool is a real product (no made-up competitors)
-- Weaknesses are specific (not just "not as good")
-- Price is researched (not "unknown")
+- Minimum 3 entries (real products, not made up)
+- Each weakness is specific (not "not as good")
+- Sources cited (URLs from web research)
 
-#### Data Sources
-
-Where information came from.
+#### Technical Feasibility
 
 **Template:**
+```markdown
+## Feasibility Assessment
+
+### What's Proven
+- [Aspect] — evidence: [source/finding from research]
+
+### What's Hard
+- [Challenge] — how others solved it: [research findings]
+- [Challenge] — risk level: [assessment with evidence]
+
+### What's Unknown
+- [Unknown] — how to resolve: [prototype, research, or ask expert]
+```
+
+#### Tech Landscape
+
+**Template:**
+```markdown
+## Technology Evaluation
+
+### Recommended Stack
+| Component | Choice | Why | Maintenance Status | Alternatives Considered |
+|-----------|--------|-----|-------------------|------------------------|
+| [Language] | [Choice] | [Reason tied to constraints] | [Last release, activity] | [What else was evaluated] |
+| [Framework] | [Choice] | [Reason] | [Status] | [Alternatives] |
+| [Database] | [Choice] | [Reason] | [Status] | [Alternatives] |
+
+### Evaluation Evidence
+- [Technology]: [specific findings from web research — community health, recent issues, ecosystem]
+- [Technology]: [specific findings]
+```
+
+**Quality gate:** Each technology has maintenance status evidence, not just opinion.
+
+#### Architecture Patterns
+
+**Template:**
+```markdown
+## Architecture Analysis
+
+### How Similar Products Are Built
+- [Product/pattern] at [scale]: [architecture description, source]
+- [Product/pattern] at [scale]: [architecture description, source]
+
+### Recommended Pattern
+[Why this pattern fits our constraints and scale]
+
+### Common Failure Modes
+- [Failure mode] — how to avoid: [mitigation]
+- [Failure mode] — how to avoid: [mitigation]
+```
+
+#### Risks and Unknowns
+
+**Template:**
+```markdown
+## Risks
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|------------|
+| [Risk] | [High/Med/Low] | [What breaks] | [How to handle] |
+
+## Open Questions
+1. [Question] — how to resolve: [action]
+2. [Question] — how to resolve: [action]
+```
+
+#### Sources
+
 ```markdown
 ## Research Sources
 
-- [Tool documentation link]
-- [Pricing page link]
-- [Industry report or article]
-- [Expert interview or forum discussion]
+- [Description] — [URL]
+- [Description] — [URL]
 ```
 
-**Quality gate:** Every claim about "existing tools" or market trends must cite a source.
-
-#### Technical Options (if applicable)
-
-For architectural or technology decisions, present 2-3 options with tradeoffs.
-
-**Template:**
-```markdown
-## Technology Options
-
-### Option A: [Approach]
-- How it works: [Brief description]
-- Pros: [2-3 specific advantages]
-- Cons: [2-3 specific drawbacks]
-- Cost/complexity: [Relative estimate]
-
-### Option B: [Approach]
-[Same structure]
-
-### Option C: [Approach]
-[Same structure]
-```
-
-**Quality gate:** Options differ meaningfully (not just "use React vs Vue"). Show actual tradeoffs.
-
-#### Constraints & Limitations
-
-What's known to be hard.
-
-**Template:**
-```markdown
-## Known Constraints
-
-**Technical:**
-- [Limitation, sourced from Q3.2 or research]
-
-**Regulatory/Domain:**
-- [If payment, healthcare, security, etc., what applies?]
-
-**Resource:**
-- [Budget, team size, timeline]
-
-**Market:**
-- [User expectations, competitive pressure]
-```
-
-#### Open Questions
-
-Decisions that still need research.
-
-**Template:**
-```markdown
-## Unknowns Still To Resolve
-
-1. [Question] — Who decides? Timeline?
-2. [Question] — Who decides? Timeline?
-3. [Question] — Who decides? Timeline?
-```
-
-**Quality gate:** Questions are answerable (not "should the color be blue?"). Each has an owner.
+**Quality gate:** Every factual claim in this document has a corresponding source.
 
 ---
 
-## File 3: DECISIONS.md
+## File 3: BLUEPRINT.md
 
-**Purpose:** Record the actual choices made. Answer "what are we building, with what, at what cost?"
+**Purpose:** Record the product architecture and technical decisions. Answer "how is the product built?"
 
 **Audience:** Project team and future maintainers
 
 ### Required Sections
 
-#### Cost Constraint Summary
-
-Single clear statement about the budget.
+#### System Architecture
 
 **Template:**
 ```markdown
-## Cost Constraint
+## System Architecture
 
-**Development budget:** [$X or "unbounded"]
-**Monthly operations budget:** [$X or "unbounded"]
-**Key limitations:** [SaaS tools limited to tier X, infrastructure on-prem only, etc.]
-**Constraint origin:** [Question Q3.1, or explicit business decision]
+[ASCII or Mermaid diagram showing major components and data flow]
+
+### Components
+- **[Component]:** [What it does, key responsibilities]
+- **[Component]:** [What it does, key responsibilities]
+
+### Data Flow
+[Description of how data moves through the system]
 ```
 
-#### Tech Stack
+**Quality gate:** Diagram shows all major components, data flows are clear, external systems visible.
 
-Every significant technology choice with justification.
+#### Tech Stack
 
 **Template:**
 ```markdown
@@ -244,409 +272,304 @@ Every significant technology choice with justification.
 
 | Component | Choice | Why | Trade-off Accepted |
 |-----------|--------|-----|--------------------|
-| Language | Node.js 20 | Constraint: team expertise; Prior Art: [Research.md section] | [What we're not using] |
-| Frontend | React 18 | v1 scope requires interactivity; Prior Art: [option] is mainstream | jQuery or Vue (simpler alternatives rejected) |
-| Database | Postgres | Constraint: on-prem only (Q3.2); Prior Art: [comparison] | NoSQL databases (considered but ACID matters here) |
-| Hosting | [Docker on EC2] | Constraint: budget $X/month; Prior Art: [comparison] | Serverless (cold-start constraints) |
-| [Other key choice] | [Choice] | [Why] | [What we're not using and why not] |
+| [Language] | [Choice] | [Traced to research/constraint] | [What was rejected and why] |
+| [Frontend] | [Choice] | [Traced to research/constraint] | [Alternatives rejected] |
+| [Database] | [Choice] | [Traced to research/constraint] | [Alternatives rejected] |
+| [Hosting] | [Choice] | [Traced to research/constraint] | [Alternatives rejected] |
 ```
 
-**Quality gates:**
-- Every row has a "Why" that references Q3.1/Q3.2 or RESEARCH.md
-- "Trade-off Accepted" column explains what was rejected
-- No orphaned choices (if a choice appears here, it was researched)
+**Quality gate:** Every row has "Why" tracing to RESEARCH.md or a stated constraint.
 
-#### Architecture Diagram (Full-tier projects only)
-
-Visual representation of how systems connect.
+#### Data Model
 
 **Template:**
 ```markdown
-## System Architecture
+## Data Model
 
-[ASCII diagram or description of major components and data flow]
+### Core Entities
+| Entity | Key Fields | Relationships |
+|--------|-----------|--------------|
+| [Entity] | [field: type, field: type] | [belongs to X, has many Y] |
 
-Example:
-```
-┌─────────────┐
-│   Browser   │
-└──────┬──────┘
-       │ HTTPS
-       ▼
-┌─────────────────┐       ┌──────────────┐
-│   Node.js API   │◄─────►│  Postgres DB │
-└─────────────────┘       └──────────────┘
-       │
-       │ Queue
-       ▼
-┌─────────────────┐
-│  Background Job │
-└─────────────────┘
+### Key Constraints
+- [Constraint, e.g., "email must be unique per tenant"]
 ```
 
-**Quality gate:** 
-- Diagram shows major components
-- Data flows are clear
-- External systems (databases, APIs, caches) are visible
+#### Cost Constraint Summary
+
+**Template:**
+```markdown
+## Constraints
+
+**Development budget:** [$X or "unbounded"]
+**Monthly operations:** [$X or "unbounded"]
+**Key limitations:** [specific tool/service restrictions]
+**Available tools:** [confirmed available — cloud, auth, DB, etc.]
+**Forbidden tools:** [explicitly cannot use]
+```
 
 #### Scope In / Scope Out
-
-Explicit feature list (in-scope) and explicit exclusions (out-of-scope).
 
 **Template:**
 ```markdown
 ## Scope Definition
 
 ### In Scope (v1)
-- [Feature] — [brief description of what it includes]
-- [Feature] — [brief description]
-- [Feature] — [brief description]
+- [Feature] — [what it includes]
 
-### Out of Scope (v1, deferred to later phases)
-- [Feature] — why: [reason]
-- [Feature] — why: [reason]
+### Deferred (future phases)
 - [Feature] — why: [reason]
 
-### Explicitly Not In v1 (design decision)
-- [Feature/integration] — why: [reason, e.g., "adds complexity without user value", "requires hardware we don't have"]
+### Explicitly Excluded
+- [Feature] — why: [design decision]
 ```
 
-**Quality gate:**
-- Nothing ambiguous (every feature clearly in or out)
-- Scope matches v1 scope from interview (Q2.2)
-- Deferral reasons are explicit ("later phase" or "never")
+**Quality gate:** Nothing ambiguous. Every feature clearly in or out.
 
 #### Key Decisions Log
-
-Major decisions made during spec and their rationale.
 
 **Template:**
 ```markdown
 ## Decision Log
 
-| Decision | Options Considered | Chosen | Why |
-|----------|-------------------|--------|-----|
-| Frontend framework | React, Vue, Svelte | React | Team expertise (Q1 context) |
-| Payment provider | Stripe, PayPal | Stripe | Budget constraint; ecosystem; docs |
-| Mobile strategy | Native, React Native, Web | Web v1 | Scope (Q2.2); cost; team size |
-| [Other major decision] | [Options] | [Choice] | [Justification] |
+| Decision | Options Considered | Chosen | Why | Source |
+|----------|-------------------|--------|-----|--------|
+| [Decision] | [Options] | [Choice] | [Justification] | [RESEARCH.md section or constraint] |
 ```
 
-#### Phase Gate Check
-
-Pre-flight verification that scope is feasible.
+#### Project Structure
 
 **Template:**
 ```markdown
-## Phase Gate Verification
+## Project Structure
 
-- [ ] All decisions have constraints backing them (DECISIONS.md review)
-- [ ] Architecture diagram matches scope (if Full-tier)
-- [ ] No conflicting tech choices (e.g., "AWS-only" + "on-prem database")
-- [ ] Team can execute this (skills available or learnable)
-- [ ] No unresolved blockers from interview
-- [ ] Budget math checks out (estimated costs vs. Q3.1 constraint)
+[Directory tree showing planned project layout]
 ```
-
-**Quality gate:** All checkboxes must be true before moving to FRAMEWORK.md. If any are false, resolve first.
 
 ---
 
-## File 4: FRAMEWORK.md
+## File 4: INFRASTRUCTURE.md
 
-**Purpose:** Define project infrastructure, workflows, gates, models, and quality rules.
+**Purpose:** Define the development architecture — how the project is built safely and efficiently. Answer "what systems protect and accelerate development?"
 
-**Audience:** Project orchestrator and team
+**Audience:** Project orchestrator, Claude Code, and development team
 
 ### Required Sections
 
-#### Engine Tier
-
-Which engine tier to deploy. Determines the complexity of the workflow engine.
+#### Standard Systems
 
 **Template:**
 ```markdown
-## Engine Tier
+## Standard Development Systems
 
-- **tier:** Small | Full
-- **rationale:** [Why this tier — project scope, duration, complexity]
+All systems below are active. Each is configured for this project's specific needs.
+
+### Quality Gates
+**What they check:** [project-specific — e.g., "cargo clippy, cargo test, rustfmt check"]
+**Thresholds:** [project-specific — e.g., "zero warnings, all tests pass, coverage > 80%"]
+**Why for this project:** [specific reason tied to architecture]
+
+### Phase Gates
+**Phase structure:**
+| Phase | Focus | Gate Criteria |
+|-------|-------|--------------|
+| [Phase name] | [What gets built] | [What must be true to advance] |
+
+### Correction Protocol & Learning
+**How it works here:** [project-specific — what kinds of mistakes to watch for given the architecture]
+**Lesson log:** LESSONS_[PROJECT].md
+
+### Loopback Tracking
+**What to watch for:** [project-specific — e.g., "data model changes that require migration rewrites"]
+
+### Project Memory
+**Critical knowledge:** [what matters for this codebase — e.g., "auth flow uses refresh tokens, never access tokens for API calls"]
+
+### Coherence System
+**Cross-file consistency points:** [project-specific — e.g., "API route names must match frontend service methods"]
+
+### Session Protocol
+**Startup checklist:** [project-specific items]
+**Shutdown checklist:** [project-specific items]
+
+### Falsification Protocol
+**How to verify claims:** [project-specific — e.g., "always check API responses against the contract, not just status codes"]
 ```
 
-**Tier definitions:**
-- **Small** → Lite engine: 10-section RULES, 3 hooks, 16 CLI commands, no frameworks, no custom agents. Target: <5K tokens session-start context. For weekend projects, single-feature builds, 1-3 day efforts.
-- **Full** → Full engine: 26+ section RULES, 11 hooks, 47+ CLI commands, 9 frameworks, custom agents. For multi-week builds, complex architectures, team coordination.
-
-**Quality gate:** Tier is explicitly stated (not left blank). Rationale matches project scope from ENVISION.md.
-
-#### Active Systems Checklist
-
-Which frameworks are enabled for this project.
+#### Delegation Model
 
 **Template:**
 ```markdown
-## Active Systems
+## Delegation Model
 
-### Mandatory (always on)
-- [x] Session Protocol — startup orientation, phase gates, task workflow
-- [x] Correction Detection — log lessons after mistakes
-- [x] Delegation Gates — plan before multi-step work
-- [x] Phase Gates — verify completion before advancing phases
-- [x] Quality Gates — lint + type + test on every commit
+### Hierarchy
+- **Orchestrator (Opus):** Architecture, gate reviews, judgment calls, cross-component coordination
+- **Implementer (Sonnet):** Multi-file features, cross-file reasoning, state management
+- **Worker (Haiku):** Single-file tasks, config, clear-spec implementation
 
-### Optional (project-specific)
-- [x/–] Visual Verification — [enabled/disabled] because [reason from Q4.1]
-- [x/–] Agent Teams mode — [enabled/disabled] because [reason from Q4.1]
+### Component → Tier Mapping
+| Component/Area | Default Tier | Why |
+|---------------|-------------|-----|
+| [Component] | [Tier] | [Reason — e.g., "cross-file state" or "single config file"] |
+
+### Sub-Agent Spawning Rules
+- [When to spawn parallel agents — e.g., "independent UI components can be built in parallel"]
+- [Escalation rules — e.g., "Haiku fails 2x → Sonnet, Sonnet fails 2x → Opus direct"]
+
+### Orchestrator Model
+**Primary:** claude-opus-4-6 (Opus)
+**Reason:** [project-specific — complexity level, judgment requirements]
 ```
 
-**Quality gate:** At least one optional is explicitly decided (even if "disabled").
-
-#### Conditional System Configuration
-
-If any optional systems are enabled, configure them.
-
-**If Visual Verification enabled:**
-
-```markdown
-### Visual Verification Configuration
-
-**Trigger:** Tasks tagged `needs_browser=1` in DB
-**Tools:** Playwright MCP for browser automation, Claude Vision for screenshot analysis
-**Workflow:**
-1. Ensure dev server running
-2. Playwright: navigate to app URL
-3. Playwright: take screenshot
-4. Claude Vision: analyze for visual issues
-5. If issues and iterations < 5 → fix → wait 2s → repeat
-6. If clean or iterations ≥ 5 → present to Master
-
-**Verification checklist:** Layout, spacing, colors, typography, interactive elements, animations, responsive behavior, dependent features
-```
-
-**If Agent Teams enabled:**
-
-```markdown
-### Agent Teams Configuration
-
-**When to use:** Multiple independent features in parallel
-**Topology:** [Orchestrator: Opus, Worker 1: Sonnet, Worker 2: Sonnet, etc.]
-**Coordination:** Orchestrator assigns work, workers report completion
-**Cost awareness:** ~3-4x tokens, only worth it if parallelism saves wall-clock time
-**Conflict resolution:** Orchestrator resolves file conflicts
-**Start command:**
-```bash
-export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
-cd [project-path] && claude --dangerously-skip-permissions
-```
-```
-
-#### Project-Specific STOP Rules
-
-Any custom rules that halt work (in addition to universal rules).
+#### Optional Systems
 
 **Template:**
 ```markdown
-## Project-Specific STOP Rules
+## Optional Systems
 
-- [Rule] (from Q4.2 or discovered during spec)
-- [Rule]
-- [Rule]
+### Visual Verification: [ACTIVE / INACTIVE]
+**Reason:** [why enabled/disabled for this project]
+[If active:]
+**What to screenshot:** [specific pages/components]
+**What to check:** [layout, spacing, colors, responsiveness, etc.]
+**Tools:** Playwright MCP + Claude Vision
 
-[If none]: No additional project-specific STOP rules beyond universal ones.
+### Agent Teams: [ACTIVE / INACTIVE]
+**Reason:** [why enabled/disabled — cost vs parallelism benefit]
+[If active:]
+**Parallel workstreams:** [which components can be built simultaneously]
+**Cost estimate:** ~[X]x token usage
 ```
 
-**Quality gate:** If user answered Q4.2 with rules, they appear here. If empty, note that.
-
-#### Orchestrator Model
-
-Which Claude model owns this project.
+#### Project-Specific Additions
 
 **Template:**
 ```markdown
-## Orchestrator Model
+## Project-Specific Systems
 
-**Primary orchestrator:** claude-opus-4-6 (Opus)
-**Reason:** [Architecture decisions, ambiguous tradeoffs, or complexity of this project]
+[Only include if research identified needs beyond the standard set]
 
-**Sub-agent tiers:**
-- Sonnet (sonnet-4-6): [Feature types or file counts where Sonnet is used]
-- Haiku (haiku-4-5): [Single-file, display-only, clear-spec work]
+### [System Name]
+**What it does:** [description]
+**Why this project needs it:** [traced to research finding or architecture characteristic]
+**Implementation:** [how it hooks into the workflow]
 ```
 
-**Quality gate:** Model name is explicit (not "default"). Reason matches project complexity.
+**Examples of project-specific additions:**
+- Contract testing hooks (API projects)
+- Migration validation gates (complex data models)
+- Performance regression monitoring (real-time features)
+- Deployment staging gates (multi-environment)
+- Secret scanning hooks (security-sensitive)
 
-#### Budget Mode (if applicable)
-
-If tight budget, provide the cost-optimized startup command.
+#### External Tools
 
 **Template:**
 ```markdown
-## Budget Mode (Optional)
+## Recommended External Tools
 
-For token-conscious sessions, start with:
-```bash
-cd [project-path] && claude --model opusplan --dangerously-skip-permissions
+| Tool | Purpose | Why for This Project |
+|------|---------|---------------------|
+| [Tool] | [What it does] | [Specific reason] |
 ```
 
-**What it does:** Opus plans (reads code, creates architecture), Sonnet executes (writes code). ~60% cheaper on implementation while preserving quality.
-
-**When to use:** If monthly token budget is tight.
-```
-
-#### Cowork Quality Gates
-
-Mandatory and recommended skills/verifications for this project.
+#### STOP Rules
 
 **Template:**
 ```markdown
-## Cowork Quality Gates
+## STOP Rules
 
-### Mandatory (run every time)
+### Universal (always active)
+- Never delete production data without backup
+- Never force-push to main
+- Never commit secrets
 
-| Trigger | Skill | What Master Does |
-|---------|-------|-----------------|
-| Before every dev→main merge | Code review | Paste `git diff main..dev` → structured review → fix on `dev` before merging |
-| [Other mandatory point] | [Skill] | [What Master does] |
-
-### Recommended (run when starting a new phase)
-
-| Trigger | Skill | When to Run |
-|---------|-------|-----------|
-| After Phase 1 complete | [Skill name] | [Condition, e.g., "after UI shell is built"] |
-| [Other checkpoint] | [Skill] | [Condition] |
-
-[If none recommended]: No additional recommended skills for this project.
+### Project-Specific
+- [Rule] — why: [tied to architecture]
+- [Rule] — why: [tied to architecture]
 ```
 
-**Quality gate:** 
-- "Code review" mandatory gate is always listed for code-bearing projects
-- Recommended gates match project type (visual projects get visual verification, data projects get data integrity checks)
-
-#### Coherence Registry Entries
-
-If this project has branded terms or architectural concepts that might drift, define them here.
+#### Hook Configuration Summary
 
 **Template:**
 ```markdown
-## Coherence Registry
+## Hook Configuration
 
-Add to coherence_registry.sh when architecture changes:
-
-```bash
-# [Date] — Project [name] canonical terms
-DEPRECATED_PATTERNS+=("old term or phrase")
-CANONICAL_LABELS+=("new canonical form")
-INTRODUCED_ON+=("[date]")
+| Hook | Trigger | What It Does |
+|------|---------|-------------|
+| [hook name] | [when it fires] | [what it checks/enforces] |
 ```
-
-[If none at spec time]: Will be populated during development as architectural terms stabilize.
-```
-
-**Quality gate:** This can be empty at spec time (it's filled in as project evolves).
 
 ---
 
 ## Quality Rules (Apply to All Spec Files)
 
 ### Rule 1: No TODOs or Placeholders
-
-Every `%%TAG%%` must be replaced with actual content. If you can't fill a section, delete it instead.
-
-**Violation:** "%%TECH_STACK%%" appears in file → FIX before presenting
-**Violation:** "[TBD]" or "TODO: finalize" → FIX before presenting
+Every `%%TAG%%` must be replaced with actual content. If you can't fill a section, delete it.
 
 ### Rule 2: No Vague Language
-
 Scan for: "might", "could", "probably", "seems", "if we", "later", "possibly", "eventually"
-
-**Violation:** "We might use caching later" → FIX to: "Caching deferred to Phase 2 (spec: Q2.2 listed as nice-to-have)"
-**Violation:** "The UI should probably be intuitive" → FIX to: "Done criteria: users complete onboarding in < 2 minutes"
+Replace with specific decisions.
 
 ### Rule 3: Every Tech Choice References a Constraint
-
-No orphaned technology decisions. Each "why" must trace back to a constraint or prior art analysis.
-
-**Violation:** "We chose Node.js" with no "why" → ADD: constraint reference (Q3.2 team expertise) or RESEARCH.md section
-**Violation:** Tech choice contradicts stated constraint → FIX the choice or the constraint
+No orphaned technology decisions. Each "why" must trace to a constraint or RESEARCH.md.
 
 ### Rule 4: Scope Has No Ambiguity
+Every feature is clearly in-scope or out-of-scope.
 
-Every feature is clearly in-scope or out-of-scope. Gray areas are resolved before approval.
-
-**Violation:** Feature list mentions "user accounts, possibly with social login" → FIX to: "User accounts with email required; social login deferred to Phase 2"
-**Violation:** "Nice-to-have" features in "done criteria" → FIX: move to "deferred"
-
-### Rule 5: Architecture Diagrams (Full-tier projects only)
-
-Full-scope projects (enterprise, complex, 3+ core systems) must include an architecture diagram.
-
-**Violation:** No diagram for Full-tier project → CREATE one (ASCII or Mermaid)
-**Violation:** Diagram doesn't show data flow → REDRAW to include queries, APIs, queues
+### Rule 5: Architecture Diagrams Required
+Non-trivial projects must include system architecture diagrams.
 
 ### Rule 6: Prior Art Must Be Researched
-
-If a tool, framework, or pattern is claimed to be "existing" or "common", verify it exists.
-
-**Violation:** "GraphQL is the industry standard" with no source → ADD: link to StackOverflow survey, GitHub trends, or similar evidence
-**Violation:** Competitive product listed but not reviewed → RESEARCH: get pricing, features, weaknesses
+Claims about existing tools or market trends must cite sources (URLs).
 
 ### Rule 7: Decisions Are Traceable
-
-Every decision in DECISIONS.md has a "why" that points to RESEARCH.md, Q3.1, Q3.2, or domain expertise.
-
-**Violation:** "We chose AWS" with no justification → FIX: add why (cost, Q3.2 requirement, team experience)
-**Violation:** Decision contradicts RESEARCH findings → FIX: either change decision or explain why research was wrong
+Every decision in BLUEPRINT.md has a "why" that traces to research or constraints.
 
 ### Rule 8: No Forward References
-
 Don't reference tasks, phases, or features not yet defined.
 
-**Violation:** "We'll handle scaling in Task PH-042" when PH-042 doesn't exist → DELETE or CREATE the task in the DB
-**Violation:** "Phase 2 will add reporting" without Phase 2 specs → MOVE to explicit deferral section with dependencies
+### Rule 9: Dev Systems Are Project-Specific
+INFRASTRUCTURE.md descriptions must reference this project's actual architecture, not generic descriptions.
 
-### Rule 9: Correction Pass Must Be Run
-
-Before presenting specs to Master, run the correction pass (see interview-flow.md).
-
-**Process:**
-1. Review every rule above
-2. Fix any violations
-3. Run coherence check (if applicable)
-4. Verify no %%TAGS%% remain
-5. Present corrected specs
-
-**Quality gate:** All corrections must pass before Master review.
+### Rule 10: Correction Pass Must Be Run
+Before presenting specs, review every rule, fix violations, verify zero tags remain.
 
 ---
 
 ## Validation Checklist
 
-Use this before marking specs complete:
+Use before marking specs complete:
 
 ```markdown
 ## Pre-Approval Checklist
 
-- [ ] ENVISION.md: Pitch is customer-facing (non-expert readable)
-- [ ] ENVISION.md: Done criteria are measurable (not subjective)
-- [ ] ENVISION.md: Exclusions section is substantial (3+ items)
-- [ ] RESEARCH.md: Prior art table has 3+ competitors
-- [ ] RESEARCH.md: All claims cite sources
-- [ ] RESEARCH.md: Open questions are answerable
-- [ ] DECISIONS.md: Tech stack table has "Why" and "Trade-off" columns
-- [ ] DECISIONS.md: Architecture diagram present (Full-tier) or intentionally omitted (Quick)
-- [ ] DECISIONS.md: Scope In/Out is comprehensive (nothing ambiguous)
-- [ ] DECISIONS.md: Phase Gate Check box is complete
-- [ ] FRAMEWORK.md: Active systems checklist is filled in
-- [ ] FRAMEWORK.md: Orchestrator model is explicit (not "default")
-- [ ] FRAMEWORK.md: No %%TAGS%% remain in any file
-- [ ] FRAMEWORK.md: No vague language in any file
-- [ ] All spec files follow Quality Rules 1-9
+- [ ] VISION.md: Pitch is customer-facing (non-expert readable)
+- [ ] VISION.md: Done criteria are measurable (not subjective)
+- [ ] VISION.md: Exclusions section has 3+ items
+- [ ] VISION.md: V1 scope has clear priority tiers
+- [ ] RESEARCH.md: Prior art table has 3+ real products with sources
+- [ ] RESEARCH.md: All claims cite URLs
+- [ ] RESEARCH.md: Tech evaluations include maintenance status
+- [ ] RESEARCH.md: Risks are identified with mitigations
+- [ ] BLUEPRINT.md: Tech stack table has "Why" and "Trade-off" columns
+- [ ] BLUEPRINT.md: Architecture diagram present
+- [ ] BLUEPRINT.md: Data model includes core entities
+- [ ] BLUEPRINT.md: Scope In/Out is comprehensive
+- [ ] BLUEPRINT.md: Decision log traces all choices
+- [ ] INFRASTRUCTURE.md: Every standard system has project-specific explanation
+- [ ] INFRASTRUCTURE.md: Delegation model maps tiers to components
+- [ ] INFRASTRUCTURE.md: STOP rules are architecture-specific
+- [ ] INFRASTRUCTURE.md: No %%TAGS%% remain
+- [ ] All spec files follow Quality Rules 1-10
 - [ ] Correction Pass has been run
 
-GATE RULE: All checkboxes must be true to present to Master.
+GATE RULE: All checkboxes must be true to present to user.
 ```
 
 ---
 
 ## Changelog
 
-- 1.0: Initial creation with all four spec file schemas, quality rules, and validation checklist
+- 2.0: Complete restructure — 4 new spec files (VISION, RESEARCH, BLUEPRINT, INFRASTRUCTURE), added research-backed quality gates, project-specific infrastructure requirements
+- 1.0: Initial creation with ENVISION, RESEARCH, DECISIONS, FRAMEWORK schemas

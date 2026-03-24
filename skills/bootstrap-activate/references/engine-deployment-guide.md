@@ -17,10 +17,10 @@ mkdir -p refs/
 - `refs/tool-inventory.md` — master tool/MCP/plugin catalog (auto-populate from environment)
 - `refs/gotchas-workflow.md` — empty template (populated by gotcha generation over time)
 
-**Conditionally create (based on FRAMEWORK.md):**
+**Conditionally create (based on INFRASTRUCTURE.md):**
 - `refs/skills-catalog.md` — if project uses custom skills
 - `refs/gotchas-frontend.md` — if project has UI components
-- `refs/planned-integrations.md` — if DECISIONS.md has deferred integrations
+- `refs/planned-integrations.md` — if BLUEPRINT.md has deferred integrations
 - `refs/visual-verification.md` — if visual verification is active
 
 ---
@@ -202,7 +202,7 @@ chmod +x [project_path]/.git/hooks/pre-push
 
 ## Step 7 — Populate DB with Initial Tasks
 
-If you have a task breakdown from Phase B (PLAN.md or DECISIONS.md):
+If you have a task breakdown from Phase B (PLAN.md or BLUEPRINT.md):
 
 ```bash
 bash db_queries.sh add-task "Phase 1" "T-01" "Task Title" "CLAUDE" "sonnet" "" ""

@@ -5,7 +5,7 @@ description: >
   "set up the workflow", "fill placeholders", "generate requirements", or any phrase
   indicating they want to transition from discovery specs to a working project with
   a populated task database and fully operational workflow engine. Prerequisites:
-  ENVISION.md, DECISIONS.md, and FRAMEWORK.md must exist in specs/ with no TODO
+  VISION.md, BLUEPRINT.md, and INFRASTRUCTURE.md must exist in specs/ with no TODO
   placeholders. Typically triggered after bootstrap-discovery completes in Cowork.
 version: 0.2.0
 ---
@@ -18,10 +18,10 @@ Transform completed discovery specs into a fully operational project with popula
 
 Before doing anything, verify ALL of these:
 
-1. `specs/ENVISION.md` exists and contains no "TODO" text
-2. `specs/DECISIONS.md` exists and contains no "TODO" text
-3. `specs/RESEARCH.md` exists (can be "N/A" for Small-tier) and contains no "TODO" text
-4. `specs/FRAMEWORK.md` exists and contains no "TODO" text
+1. `specs/VISION.md` exists and contains no "TODO" text
+2. `specs/BLUEPRINT.md` exists and contains no "TODO" text
+3. `specs/RESEARCH.md` exists and contains no "TODO" text
+4. `specs/INFRASTRUCTURE.md` exists and contains no "TODO" text
 5. `.bootstrap_mode` file exists and contains `SPECIFICATION`
 6. **Template directory check:** `~/.claude/dev-framework/templates/db_queries.template.sh` exists.
    If missing, tell the user: "Templates not installed. Run `/setup-templates` first, or point me to an existing project to extract from."
@@ -36,9 +36,9 @@ If `NEXT_SESSION.md` exists with `Handoff Source: COWORK`, read it for context a
 
 ### B1: Project Scaffolding
 
-Read DECISIONS.md to extract the tech stack and project structure. Create:
+Read BLUEPRINT.md to extract the tech stack and project structure. Create:
 
-1. The directory structure specified in DECISIONS.md "Project Structure" section
+1. The directory structure specified in BLUEPRINT.md "Project Structure" section
 2. A `.gitignore` appropriate for the chosen tech stack
 3. `refs/README.md` — progressive disclosure directory
 4. `backups/` directory for DB backups
@@ -50,7 +50,7 @@ Read DECISIONS.md to extract the tech stack and project structure. Create:
 Read `references/placeholder-registry.md` for the complete list of `%%PLACEHOLDER%%` values and where each gets its value.
 
 For each placeholder:
-1. Check if the value can be auto-derived from DECISIONS.md or FRAMEWORK.md (most can)
+1. Check if the value can be auto-derived from BLUEPRINT.md or INFRASTRUCTURE.md (most can)
 2. For values that require user input, ask using AskUserQuestion (batch related questions)
 3. Perform the replacement across all files that contain the placeholder
 4. After all replacements, verify: `grep -rn '%%' *.md *.sh` across all project files — must be zero matches
@@ -65,15 +65,15 @@ Read all four spec files. Generate `specs/requirements.md` using EARS format:
 
 Every requirement must be:
 - Directly testable (you can write a test for it)
-- Traced to a scope item in DECISIONS.md
+- Traced to a scope item in BLUEPRINT.md
 - Assigned a unique ID (FR-01, FR-02, NFR-01, etc.)
 
 Present requirements.md to the user for review. Address any `> NOTE:` annotations they add. Iterate until clean (zero unresolved notes).
 
 ### B4: Generate design.md
 
-Read requirements.md + DECISIONS.md. Generate `specs/design.md` covering:
-- System architecture (expand on the diagram from DECISIONS.md)
+Read requirements.md + BLUEPRINT.md. Generate `specs/design.md` covering:
+- System architecture (expand on the diagram from BLUEPRINT.md)
 - Data models with field types and constraints
 - Component breakdown mapped to requirements (FR-XX)
 - Key technical decisions with rationale
@@ -165,9 +165,9 @@ This is where ALL infrastructure scripts, protocol documentation, tracking files
 - `refs/README.md` — directory index
 - `refs/tool-inventory.md` — detected tools (auto-populated from environment)
 - `refs/gotchas-workflow.md` — empty template (populated by gotcha generation protocol)
-- `refs/skills-catalog.md` — if project uses custom skills (check FRAMEWORK.md)
-- `refs/gotchas-frontend.md` — if project has UI (check FRAMEWORK.md)
-- `refs/planned-integrations.md` — if DECISIONS.md has deferred integrations
+- `refs/skills-catalog.md` — if project uses custom skills (check INFRASTRUCTURE.md)
+- `refs/gotchas-frontend.md` — if project has UI (check INFRASTRUCTURE.md)
+- `refs/planned-integrations.md` — if BLUEPRINT.md has deferred integrations
 
 **Seed gotchas from bootstrap backlog:** If `~/.claude/dev-framework/BOOTSTRAP_BACKLOG.md` exists, scan **applied** items for `Gotcha:` fields. For each gotcha that matches the project's tech stack or affected area, pre-populate the relevant `refs/gotchas-*.md` file. This ensures new projects inherit hard-won warnings from previous projects.
 
@@ -179,7 +179,7 @@ This is where ALL infrastructure scripts, protocol documentation, tracking files
 | `milestone_check.template.sh` | `milestone_check.sh` | Replace: DB name, branch names (main/dev) |
 | `build_summarizer.template.sh` | `build_summarizer.sh` | **Generate real implementation** for the tech stack (see `references/quality-gates-guide.md` for per-language templates) |
 | `coherence_check.template.sh` | `coherence_check.sh` | Replace SKIP_PATTERNS with project LESSONS file name |
-| `coherence_registry.template.sh` | `coherence_registry.sh` | Start with seed entries from DECISIONS.md corrections (if any) or commented examples |
+| `coherence_registry.template.sh` | `coherence_registry.sh` | Start with seed entries from BLUEPRINT.md corrections (if any) or commented examples |
 | `work.template.sh` | `work.sh` | Replace: project path, model choice |
 | `fix.template.sh` | `fix.sh` | Replace: project path |
 | `generate_board.py` | `generate_board.py` | Replace: DB path |
@@ -266,7 +266,7 @@ Create from templates (fill skeleton content from specs):
 |------|---------|
 | `LESSONS_[PROJECT].md` | Corrections log (empty table), Insights (empty table), Universal Patterns (empty table) |
 | `LEARNING_LOG.md` | Empty table: Date, What, Category, Notes |
-| `[PROJECT]_PROJECT_MEMORY.md` | §1 Overview (from ENVISION pitch), §2 Section Lookup, §3 Architecture (from DECISIONS diagram), §4 File Structure (from DECISIONS project structure) |
+| `[PROJECT]_PROJECT_MEMORY.md` | §1 Overview (from VISION pitch), §2 Section Lookup, §3 Architecture (from BLUEPRINT diagram), §4 File Structure (from BLUEPRINT project structure) |
 | `AGENT_DELEGATION.md` | 6-tier model table + delegation map (already populated by C3) |
 | `NEXT_SESSION.md` | Handoff: source=BOOTSTRAP, signal=GREEN, first task=[first task ID from DB] |
 
