@@ -1,0 +1,28 @@
+{
+  "name": "project-bootstrap",
+  "version": "0.5.0",
+  "description": "Full-stack project bootstrapper: discovery interviews in Cowork produce specs, then Claude Code deploys a complete workflow engine with task database, phase gates, quality gates, agent delegation, correction protocol, coherence system, falsification protocol, loopback tracking (S1-S4), gotcha generation, progressive disclosure refs/, and 30+ infrastructure files — covering all 33 development framework systems at 100%.",
+  "author": {
+    "name": "Captain"
+  },
+  "keywords": [
+    "bootstrap",
+    "project-planning",
+    "sdd",
+    "workflow-engine",
+    "task-management",
+    "phase-gates",
+    "quality-gates",
+    "agent-delegation",
+    "correction-protocol",
+    "coherence-system",
+    "falsification",
+    "loopback-system",
+    "progressive-disclosure",
+    "dev-framework",
+    "hooks",
+    "agents",
+    "settings",
+    "rules"
+  ]
+}
