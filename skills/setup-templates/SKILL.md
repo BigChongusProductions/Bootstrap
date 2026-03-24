@@ -1,7 +1,14 @@
 ---
-description: Extract or generate canonical development framework templates
-allowed-tools: Read, Write, Edit, Bash, Grep, Glob
+name: setup-templates
+description: >
+  Extract or generate canonical development framework templates from an existing project,
+  or verify existing templates. Use when the user runs /setup-templates, says "extract templates",
+  "set up templates", "generate templates", or needs to prepare the canonical template directory
+  at ~/.claude/dev-framework/templates/ before running /activate-engine.
+version: 0.1.0
 ---
+
+# Setup Templates
 
 Set up the canonical template directory at `~/.claude/dev-framework/templates/` that all bootstrapped projects copy from.
 

@@ -1,7 +1,13 @@
 ---
-description: Show bootstrap progress and spec completion status
-allowed-tools: Read, Bash, Grep, Glob
+name: spec-status
+description: >
+  Show bootstrap progress and spec completion status. Use when the user runs /spec-status,
+  says "check status", "where are we", "bootstrap status", or wants to see the current
+  state of their project's bootstrap process.
+version: 0.1.0
 ---
+
+# Spec Status
 
 Check and report the current bootstrap status for this project.
 
