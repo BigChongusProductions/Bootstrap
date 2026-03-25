@@ -1,6 +1,6 @@
 ---
 framework: session-protocol
-version: 2.0
+version: 2.2
 extracted_from: production project (2026-03-21)
 ---
 
@@ -61,6 +61,16 @@ This prevents lower-tier models from making orchestration decisions they're not 
 2. Reprioritize to unblocked work
 3. Explicitly override (logged in NEXT_SESSION.md)
 
+### Step 5 — Set Effort Level
+
+Based on session signal and planned work:
+- **RED signal** → `/effort max` — deep reasoning needed for blockers/recovery
+- **YELLOW signal** → `/effort high` — careful attention for warnings
+- **GREEN signal** → `/effort medium` — standard operations
+
+**Always override to max for:** phase gate reviews, architecture decisions, S1 circuit breaker acknowledgments.
+**Drop to low for:** status queries, reading state, non-code tasks.
+
 ## The 7 Session Rules
 
 1. **Plan before you type.** Never write code without an approved plan or spec.
@@ -93,6 +103,7 @@ Before writing the save-session report:
 - `LEARNING_LOG.md`
 
 ## Changelog
+- 2.2: Added Step 5 — Set Effort Level (maps session signal to adaptive reasoning depth)
 - 2.1: Added The 7 Session Rules (from lifecycle framework)
 - 2.0: Added model self-report gate, cross-phase vs same-phase blocker distinction, lesson extraction protocol, prompt caching note
 - 1.0: Initial extraction from production project

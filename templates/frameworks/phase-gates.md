@@ -1,6 +1,6 @@
 ---
 framework: phase-gates
-version: 2.0
+version: 2.1
 extracted_from: production project (2026-03-21)
 ---
 
@@ -11,6 +11,8 @@ extracted_from: production project (2026-03-21)
 A phase gate triggers automatically when the next task to be worked on belongs to a phase beyond the last gated phase. This applies at session start AND mid-session.
 
 ## Gate Review Process
+
+> **Effort:** Gate reviews are judgment-heavy. Set `/effort max` before executing. Sub-agents performing gate audit tasks should use `effort: high` in frontmatter (`max` is Opus-only).
 
 1. **Audit the completed phase** — List all tasks. For each: was it completed? Does implementation match intent? Any shortcuts taken?
 
@@ -90,5 +92,6 @@ The orchestrator MUST run `check` before spawning a sub-agent:
 Sub-agents that independently run `check` and receive CONFIRM must return to the orchestrator without proceeding. They should never autonomously bypass a CONFIRM gate.
 
 ## Changelog
+- 2.1: Added effort guidance callout for gate reviews (/effort max)
 - 2.0: Added CONFIRM verdict, milestone gate triggers, sub-agent integration rules, same-phase vs cross-phase blocker distinction, stale reference handling
 - 1.0: Initial extraction from production project

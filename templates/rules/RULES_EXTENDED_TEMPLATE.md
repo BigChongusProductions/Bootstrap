@@ -107,6 +107,21 @@ cd %%PROJECT_PATH%% && claude --model opusplan --dangerously-skip-permissions
 ```
 This uses **Opus for planning** (reads code, creates plan) and **Sonnet for execution** (writes code). Same quality architecture decisions, ~60% cheaper on implementation.
 
+### Effort Levels (adaptive reasoning)
+Control reasoning depth via `/effort <level>`:
+
+| Level | When | Notes |
+|-------|------|-------|
+| `low` | Status checks, reading state | Fastest, cheapest |
+| `medium` | Standard work (Opus default) | Balanced |
+| `high` | Complex implementation, debugging | Deeper reasoning |
+| `max` | Gate reviews, architecture, S1 acks | Opus only, session-scoped, no token limit |
+
+Set per-subagent via frontmatter (`effort: high`). Set for session: `/effort max`.
+Set at launch: `--effort high`. Env var: `CLAUDE_CODE_EFFORT_LEVEL=high`.
+
+> 📂 Full effort strategy: see `delegation` framework.
+
 ---
 
 ## Deployment Mode: Agent Teams ⬜ INACTIVE

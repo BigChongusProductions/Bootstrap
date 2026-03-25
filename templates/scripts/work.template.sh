@@ -63,7 +63,7 @@ echo -e "${CYAN}Launching Claude Code (opusplan)...${RESET}"
 osascript -e "
 tell application \"Terminal\"
     activate
-    do script \"cd %%PROJECT_PATH%% && claude --model opusplan --dangerously-skip-permissions\"
+    do script \"cd %%PROJECT_PATH%% && claude --model opusplan --effort medium --dangerously-skip-permissions\"
 end tell
 "
 echo -e "${GREEN}✅ Claude Code launched${RESET}"

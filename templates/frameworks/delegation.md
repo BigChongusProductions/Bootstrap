@@ -1,6 +1,6 @@
 ---
 framework: delegation
-version: 2.0
+version: 2.2
 extracted_from: production project (2026-03-21)
 ---
 
@@ -18,14 +18,30 @@ extracted_from: production project (2026-03-21)
 | **Ollama** (local) | via MCP | free | Local language QA, semantic similarity, local inference. Unlimited (local GPU). Model varies by project needs. |
 | **Skills** (workflow) | `/skill-name` | — | Structured workflows: `/frontend-design` for UI, `/feature-dev` for architecture, `/simplify` for cleanup, `/code-review` for PRs. Add project-specific verification skills as needed. |
 
+## Effort Level Strategy
+
+Effort levels control reasoning depth independently of model tier. Set via `/effort <level>` or `--effort <level>`.
+
+| Effort | Use When | Cost |
+|--------|----------|------|
+| `low` | Status checks, simple queries, reading state | ~0.3x |
+| `medium` | Standard implementation, routine work | ~1x (Opus default) |
+| `high` | Multi-file features, cross-cutting changes, debugging | ~2x |
+| `max` | Architecture decisions, phase gate audits, S1 circuit breaker acks, design reviews, falsification evaluation | ~3-5x (Opus only) |
+
+**Orchestrator default:** `medium`. Escalate to `max` for judgment-heavy decisions.
+**Sub-agent defaults:** Set via frontmatter — `effort: high` for implementer, `effort: medium` for worker.
+**Session override:** `/effort max` before phase gate review, then `/effort medium` after.
+
 ## Pre-Phase Delegation Map (MANDATORY)
 
 Before touching any file in a new phase or task batch, produce this table:
 
-| Task ID | Title | Tier | Why |
-|---------|-------|------|-----|
-| X-01 | ... | Sonnet | multi-file, non-trivial state |
-| X-02 | ... | Haiku | single display component |
+| Task ID | Title | Tier | Effort | Why |
+|---------|-------|------|--------|-----|
+| X-01 | ... | Sonnet | high | multi-file, non-trivial state |
+| X-02 | ... | Haiku | medium | single display component |
+| Gate | ... | Opus (direct) | max | architecture judgment |
 
 **Rules:**
 - **Haiku** if: single file, no imports from files being written in same batch, pure display or config, spec is 100% unambiguous
@@ -95,6 +111,7 @@ Sub-agents can run in parallel **only if** they write to different files.
 **Key principle:** Human reviews plan, AI executes plan. Human owns the "what" and "why", AI owns the "how."
 
 ## Changelog
+- 2.2: Added Effort Level Strategy section, effort column in pre-phase delegation map
 - 2.1: Added Human/AI role division
 - 2.0: Added Grok/Ollama tiers, milestone gate integration with GO/CONFIRM/STOP, parallelism build cache note
 - 1.0: Initial extraction from production project
